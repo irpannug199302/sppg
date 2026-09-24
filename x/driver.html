@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Panel - SPPG BANGUNSARI 02</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1e6091;
+            --secondary-blue: #1a75ff;
+            --light-bg: #f4f7fa;
+            --card-border: rgba(30, 96, 145, 0.1);
+        }
+        body { 
+            background-color: var(--light-bg); 
+            color: #334155;
+            font-family: 'Urbanist', sans-serif;
+            padding-bottom: 60px;
+        }
+        .navbar-driver { 
+            background: linear-gradient(135deg, var(--primary-blue), #164e63); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .panel-title {
+            border-left: 5px solid var(--secondary-blue);
+            padding-left: 15px;
+            margin: 30px 0;
+        }
+        .card-sekolah { 
+            border: 1px solid var(--card-border); 
+            border-radius: 16px; 
+            background-color: #ffffff;
+            box-shadow: 0 10px 25px rgba(30, 96, 145, 0.04); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease; 
+        }
+        .preview-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            display: none;
+            margin-top: 10px;
+        }
+        .preview-img { 
+            max-height: 160px; 
+            border-radius: 8px; 
+            object-fit: cover;
+        }
+        .badge-status {
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+        }
+        .btn-action {
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+        }
+        .box-ompreng {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-driver py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
+            <i class="fa-solid fa-truck-fast"></i> SPPG LOGISTIK DRIVER
+        </a>
+        <button class="btn btn-outline-light btn-sm fw-bold px-3 rounded-pill" id="btnLogout">
+            <i class="fa-solid fa-right-from-bracket me-1"></i> Keluar
+        </button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="panel-title">
+        <h2 class="fw-bold text-dark mb-1">Manajemen Distribusi & Penjemputan</h2>
+        <p class="text-secondary mb-0">Kelola status pengiriman dan dokumentasi penjemputan ompreng ke dapur utama.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div id="daftarSekolahDriver" class="row g-4">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted">Menghubungkan ke sistem logistik...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeOduyu626TZ9CR0JGvzBH0qJAoArT8rk",
+        authDomain: "sppgbangunsari02-b5cb1.firebaseapp.com",
+        projectId: "sppgbangunsari02-b5cb1",
+        storageBucket: "sppgbangunsari02-b5cb1.firebasestorage.app",
+        messagingSenderId: "497486447370",
+        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3",
+        measurementId: "G-TE7G4NTT96"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const appsScriptUrl = "https://script.google.com/macros/s/AKfycbyAbI0lG6EYWt2bjhZfRolxRKr1eF4nk5o8CxC65sc_2sDzTd-JA40JG0QicSJ6SOvz-w/exec";
+    
+    // Objek penyimpanan foto sementara per jenis aksi
+    let tempFotoKirim = {};
+    let tempFotoJemput = {};
+    let tempFotoDapur = {};
+
+    let prosesGambar;
+    let updateStatusSampai;
+    let jemputOmpreng;
+    let konfirmasiSampaiDapur;
+
+    firebase.auth().onAuthStateChanged((user) => {
+        if (!user) {
+            alert("Akses Ditolak! Silakan login terlebih dahulu.");
+            window.location.href = "login.html";
+        } else {
+            jalankanAplikasiLapor();
+        }
+    });
+
+    // FUNGSI UPLOAD GAMBAR KE GOOGLE DRIVE LEWAT APPS SCRIPT
+    async function uploadKeDrive(namaFolderSekolah, base64Image) {
+        try {
+            const response = await fetch(appsScriptUrl, {
+                method: "POST",
+                body: JSON.stringify({
+                    divisi: namaFolderSekolah,
+                    image: base64Image
+                })
+            });
+            const resData = await response.json();
+            return resData.status === "success" ? resData.url : "-";
+        } catch (err) {
+            console.error("Gagal Upload ke Drive:", err);
+            return "-";
+        }
+    }
+
+    function jalankanAplikasiLapor() {
+        db.collection("sekolah_list").onSnapshot((querySnapshot) => {
+            const container = document.getElementById('daftarSekolahDriver');
+            container.innerHTML = "";
+
+            if (querySnapshot.empty) {
+                container.innerHTML = `<div class="col-12 text-center text-muted py-5 card card-sekolah"><p class="fw-semibold mb-0">Belum ada data pengiriman hari ini.</p></div>`;
+                return;
+            }
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const idDoc = doc.id;
+                const isPengirimanSelesai = data.status === "Sudah Sampai";
+                
+                // --- 1. BAGIAN PENGIRIMAN MAKANAN ---
+                let bagianPengiriman = "";
+                if (!isPengirimanSelesai) {
+                    bagianPengiriman = `
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary"><i class="fa-solid fa-camera me-1"></i> Foto Bukti Serah Terima Makanan:</label>
+                            <input type="file" accept="image/*" capture="environment" onchange="prosesGambar(this, '${idDoc}', 'kirim')" class="form-control bg-light">
+                            <div id="container-prev-kirim-${idDoc}" class="preview-container">
+                                <img id="prev-kirim-${idDoc}" class="preview-img img-fluid">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-action w-100 shadow-sm" id="btn-kirim-${idDoc}" onclick="updateStatusSampai('${idDoc}')">
+                            <i class="fa-solid fa-circle-check me-1"></i> Konfirmasi Makanan Sampai
+                        </button>
+                    `;
+                } else {
+                    bagianPengiriman = `
+                        <div class="alert alert-success d-flex align-items-center justify-content-between mb-0 border-0 fw-bold py-2 px-3 small" style="border-radius: 10px;">
+                            <span><i class="fa-solid fa-circle-check me-2"></i> Makanan Sampai di Sekolah</span>
+                            <small class="fw-normal text-muted">${data.waktu_tiba || ''}</small>
+                        </div>
+                    `;
+                }
+
+                // --- 2. BAGIAN PENJEMPUTAN OMPRENG & SAMPAI DAPUR ---
+                let bagianOmpreng = "";
+                if (isPengirimanSelesai) {
+                    const statusSekolah = data.ompreng_sekolah || "Belum Ready";
+                    const statusDriver = data.ompreng_driver || "Menunggu";
+
+                    let badgeSekolahHTML = `<span class="badge bg-secondary">Guru Belum Konfirmasi</span>`;
+                    if (statusSekolah === "Siap Diambil") {
+                        badgeSekolahHTML = `<span class="badge bg-info text-dark"><i class="fa-solid fa-box-open me-1"></i> Ompreng Ready</span>`;
+                    }
+
+                    let tombolOmprengHTML = "";
+
+                    // Tahap A: Sekolah Siap -> Driver Ambil Foto & Penjemputan
+                    if (statusSekolah === "Siap Diambil" && statusDriver === "Menunggu") {
+                        tombolOmprengHTML = `
+                            <div class="mt-3">
+                                <label class="form-label small fw-bold text-secondary"><i class="fa-solid fa-camera me-1"></i> Foto Ambil Ompreng Kosong di Sekolah:</label>
+                                <input type="file" accept="image/*" capture="environment" onchange="prosesGambar(this, '${idDoc}', 'jemput')" class="form-control bg-light">
+                                <div id="container-prev-jemput-${idDoc}" class="preview-container">
+                                    <img id="prev-jemput-${idDoc}" class="preview-img img-fluid">
+                                </div>
+                            </div>
+                            <button class="btn btn-warning btn-action text-dark w-100 shadow-sm mt-2" id="btn-jemput-${idDoc}" onclick="jemputOmpreng('${idDoc}')">
+                                <i class="fa-solid fa-truck-pickup me-1"></i> Ambil Ompreng (Dalam Perjalanan)
+                            </button>
+                        `;
+                    } 
+                    // Tahap B: Dalam Penjemputan -> Driver Ambil Foto & Konfirmasi Sampai Dapur
+                    else if (statusDriver === "Dalam Penjemputan") {
+                        tombolOmprengHTML = `
+                            <div class="mt-3">
+                                <label class="form-label small fw-bold text-secondary"><i class="fa-solid fa-camera me-1"></i> Foto Bukti Ompreng Sampai Dapur Utama:</label>
+                                <input type="file" accept="image/*" capture="environment" onchange="prosesGambar(this, '${idDoc}', 'dapur')" class="form-control bg-light">
+                                <div id="container-prev-dapur-${idDoc}" class="preview-container">
+                                    <img id="prev-dapur-${idDoc}" class="preview-img img-fluid">
+                                </div>
+                            </div>
+                            <button class="btn btn-success btn-action w-100 shadow-sm mt-2" id="btn-dapur-${idDoc}" onclick="konfirmasiSampaiDapur('${idDoc}')">
+                                <i class="fa-solid fa-warehouse me-1"></i> Konfirmasi Sampai Dapur Utama
+                            </button>
+                        `;
+                    } 
+                    // Tahap C: Selesai
+                    else if (statusDriver === "Sudah Sampai Dapur") {
+                        tombolOmprengHTML = `
+                            <div class="alert alert-primary mb-0 border-0 fw-bold text-center py-2 mt-2" style="border-radius: 8px;">
+                                <i class="fa-solid fa-square-check me-1"></i> Ompreng Sukses Dikembalikan ke Dapur
+                            </div>
+                        `;
+                    } else {
+                        tombolOmprengHTML = `
+                            <button class="btn btn-light text-muted border w-100 mt-2" disabled>
+                                Menunggu Sekolah Menyiapkan Ompreng...
+                            </button>
+                        `;
+                    }
+
+                    bagianOmpreng = `
+                        <div class="box-ompreng">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark small"><i class="fa-solid fa-boxes-packing text-primary me-1"></i> Status Ompreng</span>
+                                ${badgeSekolahHTML}
+                            </div>
+                            ${tombolOmprengHTML}
+                        </div>
+                    `;
+                }
+
+                const cardHTML = `
+                    <div class="col-12">
+                        <div class="card card-sekolah p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="text-uppercase text-muted small fw-bold d-block mb-1">Tujuan Pengiriman</span>
+                                    <h4 class="fw-bold text-dark mb-0">${data.nama || "Nama Sekolah"}</h4>
+                                </div>
+                                <span class="badge badge-status ${isPengirimanSelesai ? 'bg-success text-white' : 'bg-warning text-dark'}">
+                                    <i class="fa-solid ${isPengirimanSelesai ? 'fa-check-double' : 'fa-truck-moving'} me-1"></i> ${data.status || 'Dalam Perjalanan'}
+                                </span>
+                            </div>
+                            <hr class="my-3" style="border-color: var(--card-border);">
+                            ${bagianPengiriman}
+                            ${bagianOmpreng}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        });
+
+        // FUNGSI KOMPRES & PREVIEW GANDA
+        prosesGambar = function(input, idDoc, tipe) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_WIDTH = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrlKompres = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        if(tipe === 'kirim') tempFotoKirim[idDoc] = dataUrlKompres;
+                        if(tipe === 'jemput') tempFotoJemput[idDoc] = dataUrlKompres;
+                        if(tipe === 'dapur') tempFotoDapur[idDoc] = dataUrlKompres;
+
+                        const containerPrev = document.getElementById(`container-prev-${tipe}-${idDoc}`);
+                        const preview = document.getElementById(`prev-${tipe}-${idDoc}`);
+                        if(preview && containerPrev) {
+                            preview.src = dataUrlKompres;
+                            containerPrev.style.display = "block";
+                        }
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // AKSI 1: BUKTI PENGIRIMAN MAKANAN
+        updateStatusSampai = async function(idDokumen) {
+            if (!tempFotoKirim[idDokumen]) {
+                alert("Harap ambil foto bukti pengiriman makanan terlebih dahulu!");
+                return;
+            }
+
+            if(confirm("Konfirmasi pengiriman makanan sampai di lokasi?")) {
+                const btn = document.getElementById(`btn-kirim-${idDokumen}`);
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Mengunggah Foto ke Drive...';
+                btn.classList.add("disabled");
+
+                try {
+                    const docSnap = await db.collection("sekolah_list").doc(idDokumen).get();
+                    const namaSekolah = docSnap.data().nama || "Sekolah";
+                    
+                    const urlDrive = await uploadKeDrive(namaSekolah, tempFotoKirim[idDokumen]);
+                    
+                    const sekarang = new Date();
+                    const stringWaktu = sekarang.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + " WIB";
+
+                    await db.collection("sekolah_list").doc(idDokumen).update({
+                        status: "Sudah Sampai",
+                        foto_bukti: urlDrive,
+                        waktu_tiba: stringWaktu,
+                        ompreng_sekolah: "Belum Ready",
+                        ompreng_driver: "Menunggu"
+                    });
+
+                    alert("Pengiriman makanan sukses dikonfirmasi!");
+                } catch(err) {
+                    alert("Gagal memperbarui status: " + err.message);
+                    btn.innerHTML = 'Konfirmasi Makanan Sampai';
+                    btn.classList.remove("disabled");
+                }
+            }
+        }
+
+        // AKSI 2: BUKTI JEMPUT OMPRENG KOSONG
+        jemputOmpreng = async function(idDokumen) {
+            if (!tempFotoJemput[idDokumen]) {
+                alert("Harap ambil foto ompreng kosong yang dijemput dari sekolah terlebih dahulu!");
+                return;
+            }
+
+            if(confirm("Konfirmasi penjemputan ompreng kosong?")) {
+                const btn = document.getElementById(`btn-jemput-${idDokumen}`);
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Mengunggah Foto...';
+                btn.classList.add("disabled");
+
+                try {
+                    const docSnap = await db.collection("sekolah_list").doc(idDokumen).get();
+                    const namaSekolah = docSnap.data().nama || "Sekolah";
+
+                    const urlDrive = await uploadKeDrive(namaSekolah + "_JemputOmpreng", tempFotoJemput[idDokumen]);
+
+                    await db.collection("sekolah_list").doc(idDokumen).update({
+                        ompreng_driver: "Dalam Penjemputan",
+                        foto_jemput_ompreng: urlDrive
+                    });
+
+                    alert("Status penjemputan ompreng telah di-update!");
+                } catch(err) {
+                    alert("Gagal update data: " + err.message);
+                    btn.innerHTML = 'Ambil Ompreng (Dalam Perjalanan)';
+                    btn.classList.remove("disabled");
+                }
+            }
+        }
+
+        // AKSI 3: BUKTI OMPRENG SAMPAI DAPUR UTAMA
+        konfirmasiSampaiDapur = async function(idDokumen) {
+            if (!tempFotoDapur[idDokumen]) {
+                alert("Harap ambil foto bukti ompreng telah sampai di Dapur Utama terlebih dahulu!");
+                return;
+            }
+
+            if(confirm("Konfirmasi bahwa ompreng telah diserahkan di Dapur Utama?")) {
+                const btn = document.getElementById(`btn-dapur-${idDokumen}`);
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Mengunggah Foto...';
+                btn.classList.add("disabled");
+
+                try {
+                    const docSnap = await db.collection("sekolah_list").doc(idDokumen).get();
+                    const namaSekolah = docSnap.data().nama || "Sekolah";
+
+                    const urlDrive = await uploadKeDrive(namaSekolah + "_TibaDapur", tempFotoDapur[idDokumen]);
+
+                    await db.collection("sekolah_list").doc(idDokumen).update({
+                        ompreng_driver: "Sudah Sampai Dapur",
+                        foto_tiba_dapur: urlDrive
+                    });
+
+                    alert("Ompreng sukses dikonfirmasi tiba di Dapur Utama!");
+                } catch(err) {
+                    alert("Gagal update data: " + err.message);
+                    btn.innerHTML = 'Konfirmasi Sampai Dapur Utama';
+                    btn.classList.remove("disabled");
+                }
+            }
+        }
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', function() {
+        firebase.auth().signOut().then(() => { 
+            window.location.href = "login.html"; 
+        });
+    });
+</script>
+</body>
+</html>

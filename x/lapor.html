@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Laporan Tim - SPPG Bangunsari 02</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1e6091;
+            --dark-blue: #0f172a;
+            --light-bg: #f4f7fa;
+            --card-border: rgba(30, 96, 145, 0.1);
+        }
+        body { 
+            background-color: var(--light-bg); 
+            color: #334155;
+            font-family: 'Urbanist', sans-serif;
+            padding: 20px 0;
+        }
+        .main-card {
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 15px 35px rgba(30, 96, 145, 0.05);
+            overflow: hidden;
+        }
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--primary-blue), #164e63);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-blue);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .form-control, .form-select {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(30, 96, 145, 0.15);
+        }
+        .anggota-row {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .nama-label {
+            font-weight: 700;
+            color: var(--dark-blue);
+        }
+        .preview-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            display: none;
+            margin-top: 15px;
+        }
+        .preview-img { 
+            max-height: 160px; 
+            border-radius: 8px; 
+            object-fit: cover;
+        }
+        .btn-submit {
+            background-color: var(--primary-blue);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #154a73;
+            transform: translateY(-1px);
+        }
+        #infoPilihTim {
+            background: #fffbeb;
+            border: 1px dashed #f59e0b;
+            color: #b45309;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            
+            <div class="card main-card">
+                <div class="card-header-custom">
+                    <i class="fa-solid fa-clipboard-list fa-3x mb-3"></i>
+                    <h3 class="fw-bold mb-1">LAPOR OPERASIONAL TIM</h3>
+                    <p class="text-white-50 small mb-0">SPPG Bangunsari 02 - Sistem Presensi Otomatis</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form id="formLapor">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fa-solid fa-users me-1 text-primary"></i> Pilih Divisi / Tim</label>
+                            <select id="pilihTim" class="form-select" required onchange="renderNamaAnggota(this.value)">
+                                <option value="" disabled selected hidden>Pilih tim Anda...</option>
+                                <option value="Persiapan">Tim Persiapan</option>
+                                <option value="Pengolahan">Tim Pengolahan</option>
+                                <option value="Pemorsian">Tim Pemorsian</option>
+                                <option value="Cuci Ompreng">Tim Cuci Ompreng</option>
+                            </select>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label"><i class="fa-solid fa-clock text-primary"></i> Jenis Absen Tim</label>
+                                <select id="tipeJam" class="form-select">
+                                    <option value="masuk">Jam Masuk</option>
+                                    <option value="pulang">Jam Pulang</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Waktu Operasional</label>
+                                <input type="time" id="jam" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label"><i class="fa-solid fa-camera me-1 text-primary"></i> Foto Kegiatan Bersama (1 Tim)</label>
+                            <input type="file" id="fotoTim" class="form-control" accept="image/*" capture="environment" onchange="prosesGambarTim(this)">
+                            <div id="container-prev" class="preview-container">
+                                <img id="preview" class="preview-img img-fluid">
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: #cbd5e1;">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-user-check text-primary me-1"></i> Data Kehadiran Anggota</h5>
+                        </div>
+
+                        <div id="wrapperAnggota">
+                            <div id="infoPilihTim" class="p-3 text-center small">
+                                <i class="fa-solid fa-circle-info me-1"></i> Silakan pilih tim/divisi di atas terlebih dahulu untuk memunculkan daftar nama anggota.
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="btn btn-primary btn-submit w-100 text-white shadow-sm mt-4" disabled>
+                            <i class="fa-solid fa-paper-plane me-1"></i> Kirim Laporan Tim
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeOduyu626TZ9CR0JGvzBH0qJAoArT8rk",
+        authDomain: "sppgbangunsari02-b5cb1.firebaseapp.com",
+        projectId: "sppgbangunsari02-b5cb1",
+        storageBucket: "sppgbangunsari02-b5cb1.firebasestorage.app",
+        messagingSenderId: "497486447370",
+        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3",
+        measurementId: "G-TE7G4NTT96"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ⚠️ SILAKAN GANTI DENGAN LINK WEB APP GOOGLE APPS SCRIPT JIKA ADA PEMBARUAN BARU
+    const appsScriptUrl = "https://script.google.com/macros/s/AKfycbyAbI0lG6EYWt2bjhZfRolxRKr1eF4nk5o8CxC65sc_2sDzTd-JA40JG0QicSJ6SOvz-w/exec";
+    
+    // =========================================================================
+    // DATABASE DATA NAMA ANGGOTA TIAP DIVISI (Silakan edit/sesuaikan nama di bawah ini)
+    // =========================================================================
+    const dataAnggota = {
+        "Persiapan": ["HARIS PRAMONO", "Nani Kudsiah", "Maryatun", "Heni Yuliani", "Nia", "Maharani", "Willy Eka Putra", "Rioneto Nugraha"],
+        "Pengolahan": ["Aan Hasiyah", "Eti Rohaeti", "Tunjiah", "Endah Sri Rahayu", "Farhan Ferdyana", "Ani", "Anto Rubianto", "Muhammad Rifqi"],
+        "Pemorsian": ["Nia Muniatul", "Rinda Ramdaniati", "Siti Masitoh", "Diana Mulyati", "Titin Suhartini", "Eka Pratama", "Achep", "Rizcha", "Deni Setiawan"],
+        "Cuci Ompreng": ["Ilham mujabah", "Yasin Yusuf", "M zidan", "Herdi Praja", "Mudrik Ramdani", "Heri April", "Ria Ariesta", "Hardianti", "Irpan Febrian"]
+    };
+
+    let gambarTimBase64 = "";
+
+    // Fungsi Preview Foto Tim
+    function prosesGambarTim(input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                gambarTimBase64 = e.target.result;
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('container-prev').style.display = "block";
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI UTAMA: MEMUNCULKAN NAMA ANGGOTA SECARA OTOMATIS SAAT TIM DIPILIH
+    // =========================================================================
+    function renderNamaAnggota(namaTim) {
+        const wrapper = document.getElementById('wrapperAnggota');
+        const btnSubmit = document.getElementById('btnSubmit');
+        wrapper.innerHTML = "";
+
+        if (!dataAnggota[namaTim] || dataAnggota[namaTim].length === 0) {
+            wrapper.innerHTML = `<div class="p-3 text-center text-danger small">Belum ada daftar nama di tim ini.</div>`;
+            btnSubmit.disabled = true;
+            return;
+        }
+
+        // Aktifkan tombol submit karena data anggota sudah siap
+        btnSubmit.disabled = false;
+
+        // Loop array nama dan buatkan element row otomatis
+        dataAnggota[namaTim].forEach((nama, index) => {
+            const html = `
+                <div class="anggota-row">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-7 col-sm-8">
+                            <span class="nama-label d-block text-truncate">${index + 1}. ${nama}</span>
+                            <input type="hidden" class="input-nama" value="${nama}">
+                        </div>
+                        <div class="col-5 col-sm-4">
+                            <select class="form-select form-select-sm input-status">
+                                <option value="Hadir" selected>Hadir</option>
+                                <option value="Izin">Izin</option>
+                                <option value="Sakit">Sakit</option>
+                                <option value="Absen">Absen</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            wrapper.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // Proses Pengiriman Batch ke Firebase
+    document.getElementById('formLapor').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnSubmit');
+        const tim = document.getElementById('pilihTim').value;
+        const tipeJam = document.getElementById('tipeJam').value;
+        const jam = document.getElementById('jam').value;
+
+        const rows = document.querySelectorAll('.anggota-row');
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Memproses Laporan Tim...';
+        btn.disabled = true;
+
+        try {
+            let urlFotoDrive = "";
+
+            // 1. Upload foto tim sekali saja (jika ada) ke Google Drive via Apps Script
+            if (gambarTimBase64) {
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-bounce me-1"></i> Mengunggah Foto Kegiatan Tim...';
+                
+                const uploadResponse = await fetch(appsScriptUrl, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        divisi: tim,
+                        image: gambarTimBase64
+                    })
+                });
+                
+                const uploadResult = await uploadResponse.json();
+                if (uploadResult.status === "success") {
+                    urlFotoDrive = uploadResult.url;
+                } else {
+                    console.error("Gagal Upload Drive: " + uploadResult.message);
+                }
+            }
+
+            // 2. Kirim seluruh data anggota ke Firebase menggunakan metode Batch
+            const batch = db.batch();
+            btn.innerHTML = '<i class="fa-solid fa-database me-1"></i> Menyimpan ke Database Admin...';
+
+            rows.forEach(row => {
+                const nama = row.querySelector('.input-nama').value;
+                const status = row.querySelector('.input-status').value;
+
+                // Membuat ID dokumen unik berdasarkan Kombinasi Tim dan Nama Anggota
+                const docId = `${tim}_${nama.replace(/\s+/g, '_').toLowerCase()}`;
+                const docRef = db.collection("divisi_status").doc(docId);
+
+                const dataPayload = {
+                    nama_divisi: tim,
+                    nama_anggota: nama,
+                    status: status,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // Memasukkan Jam Masuk atau Pulang secara fleksibel
+                if (tipeJam === "masuk") {
+                    dataPayload.jam_masuk = jam + " WIB";
+                } else {
+                    dataPayload.jam_pulang = jam + " WIB";
+                }
+
+                // Menempelkan link URL foto kegiatan bersama yang sama di setiap baris anggota tim tersebut
+                if (urlFotoDrive) {
+                    dataPayload.foto_kegiatan = urlFotoDrive;
+                }
+
+                batch.set(docRef, dataPayload, { merge: true });
+            });
+
+            // Eksekusi semua data ke Firebase sekaligus
+            await batch.commit();
+
+            alert("Sukses! Laporan kerja dan absensi seluruh anggota tim berhasil dikirim.");
+            window.location.reload();
+
+        } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan pengiriman: " + error.message);
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> Kirim Laporan Tim';
+            btn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>

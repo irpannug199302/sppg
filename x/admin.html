@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Dashboard - SPPG Bangunsari 02</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a192f;
+            --card-bg: #112240;
+            --accent-blue: #00b4d8;
+            --accent-glow: #90e0ef;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-light); 
+            font-family: 'Urbanist', sans-serif;
+            padding-bottom: 60px;
+        }
+        
+        /* Navbar Header */
+        .navbar-admin {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-title {
+            border-left: 5px solid var(--accent-blue);
+            padding-left: 18px;
+            margin: 35px 0 25px 0;
+        }
+
+        /* Card Custom */
+        .card-divisi {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            transition: transform 0.2s ease;
+        }
+
+        .card-divisi:hover {
+            border-color: rgba(0, 180, 216, 0.3);
+        }
+
+        /* Table Styling */
+        .table { 
+            color: var(--text-light); 
+            vertical-align: middle; 
+        }
+        .table thead th { 
+            background-color: rgba(0, 180, 216, 0.1); 
+            color: var(--accent-glow); 
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            border: none;
+            padding: 14px;
+        }
+        .table tbody td { 
+            border-color: var(--border-color); 
+            padding: 16px 14px; 
+            font-size: 14px;
+        }
+        
+        /* Badges & Buttons */
+        .badge-status { 
+            font-size: 11px; 
+            padding: 6px 14px; 
+            border-radius: 30px; 
+            font-weight: 700; 
+        }
+        .btn-view { 
+            color: var(--accent-blue); 
+            text-decoration: none; 
+            font-weight: 700; 
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .btn-view:hover { 
+            color: var(--accent-glow); 
+            text-decoration: underline; 
+        }
+        .section-icon { 
+            margin-right: 10px; 
+            color: var(--accent-blue); 
+        }
+
+        /* Input Foto Menu */
+        .photo-slot-box {
+            background: rgba(255, 255, 255, 0.02); 
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+        }
+        .photo-slot-box:hover {
+            border-color: rgba(0, 180, 216, 0.4);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .img-admin-preview {
+            height: 120px; 
+            width: 100%; 
+            object-fit: cover; 
+            border-radius: 10px;
+        }
+        .form-control-dark {
+            background-color: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border-radius: 8px;
+        }
+        .form-control-dark:focus {
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.25rem rgba(0, 180, 216, 0.2) !important;
+        }
+
+        /* Action Control Box */
+        .control-panel-box {
+            background: linear-gradient(145deg, #0d1b2a, #1b263b);
+            border: 1px solid rgba(0, 180, 216, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR EXECUTIVE -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-admin py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
+            <i class="fa-solid fa-chart-line text-info"></i> SPPG DASHBOARD UTAMA
+        </a>
+        <button class="btn btn-outline-light btn-sm fw-bold px-3 rounded-pill" id="btnLogout">
+            <i class="fa-solid fa-right-from-bracket me-1"></i> Keluar
+        </button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-title">
+        <h2 class="fw-extrabold m-0">OPERATIONAL <span style="color: var(--accent-blue);">CONTROL</span></h2>
+        <p class="text-secondary mb-0">SPPG Bangunsari 02 - Real-Time Executive Monitoring & Management System</p>
+    </div>
+
+    <!-- KELOLA FOTO MENU -->
+    <div class="card-divisi">
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-image section-icon"></i> Kelola Foto Menu Hari Ini</h4>
+        <p class="text-muted small mb-4">Tempelkan URL link foto menu ke kolom yang bersangkutan untuk memperbarui tampilan di halaman utama (`index.html`).</p>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 photo-slot-box">
+                    <label class="form-label fw-bold small text-white-50 mb-2"><i class="fa-solid fa-link me-1"></i> Foto Menu 1 (Kiri)</label>
+                    <div class="input-group mb-3">
+                        <input type="text" id="input-link-foto1" class="form-control form-control-sm form-control-dark" placeholder="Masukkan URL Gambar...">
+                        <button class="btn btn-sm btn-info fw-bold px-3 text-white" onclick="updateLinkFoto('foto1')">Set</button>
+                    </div>
+                    <div class="text-center bg-dark p-2 rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-center" style="min-height: 130px;">
+                        <img id="preview-admin-foto1" src="https://picsum.photos/600/400?1" class="img-admin-preview">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 photo-slot-box">
+                    <label class="form-label fw-bold small text-white-50 mb-2"><i class="fa-solid fa-link me-1"></i> Foto Menu 2 (Tengah)</label>
+                    <div class="input-group mb-3">
+                        <input type="text" id="input-link-foto2" class="form-control form-control-sm form-control-dark" placeholder="Masukkan URL Gambar...">
+                        <button class="btn btn-sm btn-info fw-bold px-3 text-white" onclick="updateLinkFoto('foto2')">Set</button>
+                    </div>
+                    <div class="text-center bg-dark p-2 rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-center" style="min-height: 130px;">
+                        <img id="preview-admin-foto2" src="https://picsum.photos/600/400?2" class="img-admin-preview">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 photo-slot-box">
+                    <label class="form-label fw-bold small text-white-50 mb-2"><i class="fa-solid fa-link me-1"></i> Foto Menu 3 (Kanan)</label>
+                    <div class="input-group mb-3">
+                        <input type="text" id="input-link-foto3" class="form-control form-control-sm form-control-dark" placeholder="Masukkan URL Gambar...">
+                        <button class="btn btn-sm btn-info fw-bold px-3 text-white" onclick="updateLinkFoto('foto3')">Set</button>
+                    </div>
+                    <div class="text-center bg-dark p-2 rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-center" style="min-height: 130px;">
+                        <img id="preview-admin-foto3" src="https://picsum.photos/600/400?3" class="img-admin-preview">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIM PERSIAPAN -->
+    <div class="card-divisi">
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-boxes-packing section-icon"></i> Tim Persiapan</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th>Nama Anggota</th><th>Jam Masuk</th><th>Daftar Hadir</th><th>Jam Pulang</th><th>Foto Kegiatan</th></tr>
+                </thead>
+                <tbody id="persiapanTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TIM PENGOLAHAN -->
+    <div class="card-divisi">
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-fire-burner section-icon"></i> Tim Pengolahan</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th>Nama Anggota</th><th>Jam Masuk</th><th>Daftar Hadir</th><th>Jam Pulang</th><th>Foto Kegiatan</th></tr>
+                </thead>
+                <tbody id="pengolahanTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TIM PEMORSIAN -->
+    <div class="card-divisi">
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-utensils section-icon"></i> Tim Pemorsian</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th>Nama Anggota</th><th>Jam Masuk</th><th>Daftar Hadir</th><th>Jam Pulang</th><th>Foto Kegiatan</th></tr>
+                </thead>
+                <tbody id="pemorsianTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TIM CUCI OMPRENG -->
+    <div class="card-divisi">
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-soap section-icon"></i> Tim Cuci Ompreng</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr><th>Nama Anggota</th><th>Jam Masuk</th><th>Daftar Hadir</th><th>Jam Pulang</th><th>Foto Kegiatan</th></tr>
+                </thead>
+                <tbody id="cuciTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- LOGISTIK DISTRIBUTION CONTROL -->
+    <div class="card-divisi">
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-truck-ramp-box section-icon"></i> Status Distribusi Logistik Sekolah</h4>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nama Sekolah</th>
+                        <th>Status Pengiriman</th>
+                        <th>Waktu Tiba</th>
+                        <th>Status Ompreng Sekolah</th>
+                        <th>Status Penjemputan Driver</th>
+                        <th>Foto Bukti</th>
+                    </tr>
+                </thead>
+                <tbody id="sekolahTable"></tbody>
+            </table>
+        </div>
+
+        <!-- TOMBOL AKSI UTAMA -->
+        <div class="control-panel-box mt-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <button class="btn btn-success w-100 fw-bold py-3 shadow-sm" id="btnDownloadExcel" style="border-radius: 12px;">
+                        <i class="fa-solid fa-file-excel text-white me-2"></i> UNDUH DATA EXCEL HARI INI
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-danger w-100 fw-bold py-3 shadow-sm" id="btnResetAll" style="border-radius: 12px;">
+                        <i class="fa-solid fa-rotate me-2"></i> RESET SEMUA STATUS & DATA HARI INI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeOduyu626TZ9CR0JGvzBH0qJAoArT8rk",
+        authDomain: "sppgbangunsari02-b5cb1.firebaseapp.com",
+        projectId: "sppgbangunsari02-b5cb1",
+        storageBucket: "sppgbangunsari02-b5cb1.firebasestorage.app",
+        messagingSenderId: "497486447370",
+        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3",
+        measurementId: "G-TE7G4NTT96"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let updateLinkFoto;
+
+    // PROTEKSI AKSED
+    firebase.auth().onAuthStateChanged((user) => {
+        if (!user) {
+            alert("Akses Ditolak! Silakan login terlebih dahulu.");
+            window.location.href = "login.html";
+        } else {
+            jalankanAplikasiAdmin();
+        }
+    });
+
+    function jalankanAplikasiAdmin() {
+        
+        // GALERI FOTO MENU
+        db.collection("galeri_data").doc("sppg_photos").onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                if (data.foto1) {
+                    document.getElementById('preview-admin-foto1').src = data.foto1;
+                    if(!document.getElementById('input-link-foto1').value) document.getElementById('input-link-foto1').value = data.foto1;
+                }
+                if (data.foto2) {
+                    document.getElementById('preview-admin-foto2').src = data.foto2;
+                    if(!document.getElementById('input-link-foto2').value) document.getElementById('input-link-foto2').value = data.foto2;
+                }
+                if (data.foto3) {
+                    document.getElementById('preview-admin-foto3').src = data.foto3;
+                    if(!document.getElementById('input-link-foto3').value) document.getElementById('input-link-foto3').value = data.foto3;
+                }
+            }
+        });
+
+        // UPDATE FOTO MENU
+        updateLinkFoto = async function(slotFoto) {
+            const urlInput = document.getElementById(`input-link-foto${slotFoto.slice(-1)}`).value.trim();
+            if (!urlInput) {
+                alert("Harap masukkan URL gambar!");
+                return;
+            }
+
+            try {
+                await db.collection("galeri_data").doc("sppg_photos").set({
+                    [slotFoto]: urlInput
+                }, { merge: true });
+
+                alert(`Sukses! Tautan Foto ${slotFoto.slice(-1)} berhasil di-update.`);
+            } catch (error) {
+                alert("Gagal mengubah foto: " + error.message);
+            }
+        }
+
+        // RENDER TABEL DIVISI
+        function renderDivisi(namaDivisi, tableId) {
+            db.collection("divisi_status").where("nama_divisi", "==", namaDivisi).onSnapshot(snapshot => {
+                const tableBody = document.getElementById(tableId);
+                tableBody.innerHTML = "";
+                if(snapshot.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Belum ada anggota yang absen hari ini</td></tr>`;
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const statusBadge = d.status === 'Hadir' ? 'bg-success' : 'bg-danger';
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${d.nama_anggota || '-'}</td>
+                            <td>${d.jam_masuk || '-'}</td>
+                            <td><span class="badge badge-status ${statusBadge}">${d.status || 'Absen'}</span></td>
+                            <td>${d.jam_pulang || '-'}</td>
+                            <td>${d.foto_kegiatan ? `<a href="${d.foto_kegiatan}" target="_blank" class="btn-view"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Lihat Foto</a>` : '-'}</td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        renderDivisi("Persiapan", "persiapanTable");
+        renderDivisi("Pengolahan", "pengolahanTable");
+        renderDivisi("Pemorsian", "pemorsianTable");
+        renderDivisi("Cuci Ompreng", "cuciTable");
+
+        // RENDER TABEL DISTRIBUSI SEKOLAH
+        db.collection("sekolah_list").onSnapshot(snapshot => {
+            const tableBody = document.getElementById('sekolahTable');
+            tableBody.innerHTML = "";
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                const statusKirimBadge = d.status === 'Sudah Sampai' ? 'bg-success text-white' : 'bg-warning text-dark';
+                
+                let omprengSekolahBadge = `<span class="badge bg-secondary">Belum Ready</span>`;
+                if (d.ompreng_sekolah === "Siap Diambil") {
+                    omprengSekolahBadge = `<span class="badge bg-info text-dark">Siap Diambil</span>`;
+                }
+
+                let omprengDriverBadge = `<span class="badge bg-secondary">Menunggu</span>`;
+                if (d.ompreng_driver === "Dalam Penjemputan") {
+                    omprengDriverBadge = `<span class="badge bg-warning text-dark">Proses Jemput</span>`;
+                } else if (d.ompreng_driver === "Sudah Sampai Dapur") {
+                    omprengDriverBadge = `<span class="badge bg-success">Di Dapur Utama</span>`;
+                }
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-white">${d.nama}</td>
+                        <td><span class="badge badge-status ${statusKirimBadge}">${d.status || 'Dalam Perjalanan'}</span></td>
+                        <td>${d.waktu_tiba || '-'}</td>
+                        <td>${omprengSekolahBadge}</td>
+                        <td>${omprengDriverBadge}</td>
+                        <td>${d.foto_bukti ? `<a href="${d.foto_bukti}" target="_blank" class="btn-view"><i class="fa-solid fa-image me-1"></i>Lihat Bukti</a>` : '-'}</td>
+                    </tr>
+                `;
+            });
+        });
+
+        // DOWNLOAD EXCEL
+        document.getElementById('btnDownloadExcel').addEventListener('click', async function() {
+            const btn = document.getElementById('btnDownloadExcel');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Mengunduh...';
+            btn.disabled = true;
+
+            try {
+                const divisiSnapshot = await db.collection("divisi_status").get();
+                const dataDivisi = [];
+                divisiSnapshot.forEach(doc => {
+                    const d = doc.data();
+                    dataDivisi.push({
+                        "Nama Divisi": d.nama_divisi || '-',
+                        "Nama Anggota": d.nama_anggota || '-',
+                        "Status Kehadiran": d.status || '-',
+                        "Jam Masuk": d.jam_masuk || '-',
+                        "Jam Pulang": d.jam_pulang || '-',
+                        "Foto Kegiatan": d.foto_kegiatan || '-'
+                    });
+                });
+
+                const sekolahSnapshot = await db.collection("sekolah_list").get();
+                const dataSekolah = [];
+                sekolahSnapshot.forEach(doc => {
+                    const d = doc.data();
+                    dataSekolah.push({
+                        "Nama Sekolah": d.nama || '-',
+                        "Status Pengiriman": d.status || '-',
+                        "Waktu Tiba": d.waktu_tiba || '-',
+                        "Status Ompreng Sekolah": d.ompreng_sekolah || 'Belum Ready',
+                        "Status Ompreng Driver": d.ompreng_driver || 'Menunggu',
+                        "Foto Bukti": d.foto_bukti || '-'
+                    });
+                });
+
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dataDivisi.length ? dataDivisi : [{"Keterangan": "Nihil"}]), "Absensi Divisi");
+                XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(dataSekolah.length ? dataSekolah : [{"Keterangan": "Nihil"}]), "Logistik Sekolah");
+
+                XLSX.writeFile(workbook, `Laporan_SPPG_Bangunsari_02_${new Date().toISOString().split('T')[0]}.xlsx`);
+                alert("Laporan Excel berhasil diunduh.");
+
+            } catch (error) {
+                alert("Kesalahan sistem: " + error.message);
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-file-excel text-white me-2"></i> UNDUH DATA EXCEL HARI INI';
+                btn.disabled = false;
+            }
+        });
+
+        // RESET SYSTEM HARIAN (PERBAIKAN TOTAL SINKRONISASI)
+        document.getElementById('btnResetAll').addEventListener('click', function() {
+            if (confirm("Apakah Anda yakin ingin mereset operasional hari ini?\n\n- Semua Nama Anggota Divisi akan DIHAPUS.\n- Status Pengiriman Sekolah & Ompreng akan DI-RESET TOTAL ke awal.")) {
+                const btn = document.getElementById('btnResetAll');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Mereset Data...';
+                btn.disabled = true;
+
+                const batch = db.batch();
+
+                db.collection("divisi_status").get().then(snapshot => {
+                    snapshot.forEach(doc => {
+                        batch.delete(db.collection("divisi_status").doc(doc.id));
+                    });
+                    return db.collection("sekolah_list").get();
+                }).then(snapshot => {
+                    snapshot.forEach(doc => {
+                        batch.update(db.collection("sekolah_list").doc(doc.id), {
+                            status: "Dalam Perjalanan",
+                            waktu_tiba: "",
+                            foto_bukti: "",
+                            ompreng_sekolah: "Belum Ready",
+                            ompreng_driver: "Menunggu"
+                        });
+                    });
+                    return batch.commit();
+                }).then(() => {
+                    alert("RESET BERHASIL! Seluruh tampilan di index.html, guru.html, dan driver.html telah ter-reset penuh.");
+                    btn.innerHTML = '<i class="fa-solid fa-rotate me-2"></i> RESET SEMUA STATUS & DATA HARI INI';
+                    btn.disabled = false;
+                }).catch(error => {
+                    alert("Gagal mereset: " + error.message);
+                    btn.innerHTML = '<i class="fa-solid fa-rotate me-2"></i> RESET SEMUA STATUS & DATA HARI INI';
+                    btn.disabled = false;
+                });
+            }
+        });
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', function() {
+        firebase.auth().signOut().then(() => { 
+            window.location.href = "login.html"; 
+        });
+    });
+</script>
+</body>
+</html>
