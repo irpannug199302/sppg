@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konfirmasi Ompreng - SPPG BANGUNSARI 02</title>
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root {
+    --primary: #1e6091;
+    --secondary: #1a75ff;
+    --dark-blue: #0f172a;
+    --light: #f4f7fa;
+}
+
+body {
+    background: var(--light);
+    font-family: 'Urbanist', sans-serif;
+    color: #334155;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card-guru {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.btn-confirm {
+    background: linear-gradient(135deg, #0284c7, #1d4ed8);
+    color: white;
+    font-weight: 700;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-confirm:hover {
+    background: linear-gradient(135deg, #0369a1, #1e40af);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-reset {
+    background: #f1f5f9;
+    color: #64748b;
+    font-weight: 600;
+    border-radius: 12px;
+}
+</style>
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            
+            <!-- Header Logo / Info -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style="width: 60px; height: 60px; font-size: 24px;">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">SPPG BANGUNSARI 02</h4>
+                <p class="text-muted small">Panel Konfirmasi Ompreng Kosong oleh Pihak Sekolah</p>
+            </div>
+
+            <!-- Card Utama -->
+            <div class="card card-guru p-4 bg-white">
+                
+                <!-- Step 1: Pilih Sekolah -->
+                <div class="mb-4">
+                    <label for="selectSekolah" class="form-label fw-bold text-dark">
+                        <i class="fa-solid fa-school text-primary me-1"></i> Pilih Sekolah Anda:
+                    </label>
+                    <select id="selectSekolah" class="form-select form-select-lg rounded-3 fs-6" onchange="cekStatusSekolah()">
+                        <option value="" selected disabled>-- Pilih Nama Sekolah --</option>
+                    </select>
+                </div>
+
+                <!-- Info Status Saat Ini -->
+                <div id="infoStatusContainer" class="p-3 mb-4 rounded-3 bg-light text-center d-none">
+                    <span class="text-muted small d-block mb-1">Status Ompreng Saat Ini:</span>
+                    <h6 id="textStatusOmpreng" class="fw-bold mb-0 text-secondary">-</h6>
+                </div>
+
+                <!-- Step 2: Tombol Aksi -->
+                <button id="btnReady" class="btn btn-confirm w-100 fs-5 mb-3" onclick="kirimKonfirmasi()" disabled>
+                    <i class="fa-solid fa-box-open me-2"></i> Ompreng Siap Diambil
+                </button>
+
+                <button id="btnReset" class="btn btn-reset w-100 btn-sm d-none" onclick="resetKonfirmasi()">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Batalkan / Reset Status
+                </button>
+
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="index.html" class="text-decoration-none text-muted small">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Halaman Utama
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeOduyu626TZ9CR0JGvzBH0qJAoArT8rk",
+        authDomain: "sppgbangunsari02-b5cb1.firebaseapp.com",
+        projectId: "sppgbangunsari02-b5cb1",
+        storageBucket: "sppgbangunsari02-b5cb1.firebasestorage.app",
+        messagingSenderId: "497486447370",
+        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3",
+        measurementId: "G-TE7G4NTT96"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const selectSekolah = document.getElementById('selectSekolah');
+    const btnReady = document.getElementById('btnReady');
+    const btnReset = document.getElementById('btnReset');
+    const infoStatusContainer = document.getElementById('infoStatusContainer');
+    const textStatusOmpreng = document.getElementById('textStatusOmpreng');
+
+    let dataSekolahList = {};
+
+    // 1. Muat Daftar Sekolah dari Firebase ke Dropdown
+    db.collection("sekolah_list").onSnapshot((snapshot) => {
+        const currentSelected = selectSekolah.value;
+        selectSekolah.innerHTML = '<option value="" disabled selected>-- Pilih Nama Sekolah --</option>';
+        dataSekolahList = {};
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            dataSekolahList[doc.id] = data;
+
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = data.nama || "Sekolah Tanpa Nama";
+            selectSekolah.appendChild(option);
+        });
+
+        if (currentSelected) {
+            selectSekolah.value = currentSelected;
+            cekStatusSekolah();
+        }
+    });
+
+    // 2. Cek Status Ompreng Sekolah yang Dipilih
+    function cekStatusSekolah() {
+        const docId = selectSekolah.value;
+        if (!docId || !dataSekolahList[docId]) return;
+
+        const data = dataSekolahList[docId];
+        infoStatusContainer.classList.remove('d-none');
+
+        if (data.ompreng_sekolah === "Siap Diambil") {
+            textStatusOmpreng.innerHTML = `<span class="text-info"><i class="fa-solid fa-circle-check me-1"></i> Siap Diambil Driver</span>`;
+            btnReady.disabled = true;
+            btnReady.innerHTML = `<i class="fa-solid fa-check me-2"></i> Sudah Dikonfirmasi`;
+            btnReset.classList.remove('d-none');
+        } else {
+            textStatusOmpreng.innerHTML = `<span class="text-secondary"><i class="fa-solid fa-clock me-1"></i> Belum Ready</span>`;
+            btnReady.disabled = false;
+            btnReady.innerHTML = `<i class="fa-solid fa-box-open me-2"></i> Ompreng Siap Diambil`;
+            btnReset.classList.add('d-none');
+        }
+    }
+
+    // 3. Update Status ke Firebase saat Guru klik Tombol
+    function kirimKonfirmasi() {
+        const docId = selectSekolah.value;
+        if (!docId) return;
+
+        btnReady.disabled = true;
+        btnReady.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Memproses...`;
+
+        db.collection("sekolah_list").doc(docId).update({
+            ompreng_sekolah: "Siap Diambil",
+            waktu_ompreng_ready: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        })
+        .then(() => {
+            alert("Terima kasih! Notifikasi ompreng siap diambil telah dikirim ke Driver.");
+            cekStatusSekolah();
+        })
+        .catch((err) => {
+            alert("Gagal mengupdate data: " + err.message);
+            btnReady.disabled = false;
+        });
+    }
+
+    // 4. Fitur Opsional: Reset Status jika Guru Salah Klik
+    function resetKonfirmasi() {
+        const docId = selectSekolah.value;
+        if (!docId) return;
+
+        if (confirm("Apakah Anda yakin ingin membatalkan status ompreng siap diambil?")) {
+            db.collection("sekolah_list").doc(docId).update({
+                ompreng_sekolah: "Belum Ready"
+            })
+            .then(() => {
+                cekStatusSekolah();
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
