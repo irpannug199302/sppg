@@ -1,260 +1,683 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CineStar Premiere - Now Showing & Schedule</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamHub - Premium Adult Content 18+</title>
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Streaming video adult HD gratis dan terlengkap. Khusus pengunjung berusia 18 tahun ke atas.">
+    <style>
+        :root {
+            --bg-main: #0b0b0e;
+            --bg-card: #16161e;
+            --accent: #ff2a5f;
+            --text-main: #f1f1f5;
+            --text-muted: #8e8e9e;
+            --border: #232330;
+        }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-<style>
-:root {
-    --bg-dark: #0a0e17;
-    --card-dark: #121929;
-    --cinema-red: #e50914;
-    --gold: #f59e0b;
-    --text-muted: #94a3b8;
-}
-body {
-    background-color: var(--bg-dark);
-    font-family: 'Urbanist', sans-serif;
-    color: #e2e8f0;
-}
-.navbar {
-    background: rgba(10, 14, 23, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.hero {
-    min-height: 75vh;
-    background: linear-gradient(rgba(10, 14, 23, 0.5), var(--bg-dark)),
-                url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1600') center/cover no-repeat;
-    display: flex;
-    align-items: center;
-}
-.stat-card {
-    background: var(--card-dark);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 24px;
-    transition: transform 0.3s;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(229, 9, 20, 0.4);
-}
-.movie-poster {
-    height: 380px;
-    width: 100%;
-    object-fit: cover;
-    border-radius: 14px;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-.movie-poster:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.3);
-}
-.table-cinema {
-    background: var(--card-dark);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-}
-.table-cinema thead th {
-    background: rgba(229, 9, 20, 0.15);
-    color: #ff8a8a;
-    border: none;
-    padding: 16px;
-}
-.table-cinema tbody td {
-    padding: 16px;
-    border-color: rgba(255,255,255,0.05);
-    color: #e2e8f0;
-}
-</style>
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 30px;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Age Verification Overlay */
+        .age-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .age-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 450px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+        }
+
+        .age-box h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .age-box p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .age-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-enter {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-leave {
+            background: #2a2a38;
+            color: var(--text-muted);
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        /* Navbar */
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .search-box {
+            flex-grow: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #0d0d12;
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: #fff;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        /* Ad Banners Placeholder */
+        .ad-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .ad-banner {
+            background: #111118;
+            border: 1px dashed var(--border);
+            padding: 25px 15px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 12px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #333345;
+        }
+
+        .thumb-box {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #000;
+            cursor: pointer;
+        }
+
+        .thumb-box img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge-quality {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .card-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Modal Player */
+        .player-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .player-box {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 800px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .player-header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111118;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .close-player {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .player-content {
+            position: relative;
+            padding-top: 56.25%;
+            background: #000;
+        }
+
+        .player-content iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Footer & Legal Pages Modal */
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            margin-top: 50px;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            cursor: pointer;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .legal-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .legal-box {
+            background: var(--bg-card);
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .legal-box h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .legal-box p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .btn-close-legal {
+            margin-top: 15px;
+            background: var(--border);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .search-box { order: 3; width: 100%; max-width: none; margin-top: 10px; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-extrabold fs-4" href="#">
-            <i class="fa-solid fa-film text-danger me-2"></i> CINE<span class="text-danger">STAR</span>
-        </a>
-        <div class="ms-auto d-flex align-items-center gap-3">
-            <a href="#jadwal" class="nav-link text-white-50">Jadwal Studio</a>
-            <a href="login.html" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold">
-                <i class="fa-solid fa-user-lock me-1"></i> Staff Portal
-            </a>
-        </div>
-    </div>
-</nav>
-
-<section class="hero">
-    <div class="container text-center py-5">
-        <span class="badge bg-danger px-3 py-2 rounded-pill fw-bold mb-3"><i class="fa-solid fa-sparkles me-1"></i> PREMIERE EXPERIENCES</span>
-        <h1 class="display-3 fw-extrabold mb-3 text-white">Nonton Film Pilihan dalam Kualitas IMAX & Dolby Atmos</h1>
-        <p class="lead text-white-50 max-w-700 mx-auto mb-4">Pantau jadwal tayang film terfavorit dan ketersediaan kursi studio secara real-time di CineStar Cinema.</p>
-        <a href="#jadwal" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow-lg">
-            <i class="fa-solid fa-ticket me-2"></i> Lihat Live Studio
-        </a>
-    </div>
-</section>
-
-<!-- STATISTIK BIOSKOP -->
-<section class="py-5">
-    <div class="container">
-        <div class="row g-4 text-center">
-            <div class="col-md-3 col-6">
-                <div class="stat-card">
-                    <h2 class="fw-extrabold text-danger m-0" id="stat-film">0</h2>
-                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Film Tayang Hari Ini</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-card">
-                    <h2 class="fw-extrabold text-warning m-0" id="stat-studio">0</h2>
-                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Studio Aktif</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-card">
-                    <h2 class="fw-extrabold text-info m-0" id="stat-tiket">0</h2>
-                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Tiket Terjual</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-card">
-                    <h2 class="fw-extrabold text-success m-0" id="stat-okupansi">0%</h2>
-                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Tingkat Okupansi Kursi</p>
-                </div>
+    <!-- 18+ Age Overlay -->
+    <div class="age-overlay" id="ageModal">
+        <div class="age-box">
+            <h2>PERINGATAN 18+</h2>
+            <p>Situs web ini berisi konten khusus dewasa. Anda harus berusia minimal 18 tahun atau telah dewasa secara hukum di wilayah Anda untuk mengakses konten di situs ini.</p>
+            <div class="age-buttons">
+                <button class="btn btn-enter" onclick="confirmAge()">SAYA BERUSIA 18+</button>
+                <button class="btn btn-leave" onclick="window.location.href='https://www.google.com'">KELUAR</button>
             </div>
         </div>
     </div>
-</section>
 
-<!-- LIVE STATUS STUDIO -->
-<section id="jadwal" class="py-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <h3 class="fw-extrabold m-0 text-white"><i class="fa-solid fa-clapperboard text-danger me-2"></i> Status Penayangan Studio</h3>
-                <p class="text-white-50 small mb-0">Informasi live langsung dari tim operator proyektor bioskop</p>
+    <!-- Header / Navbar -->
+    <header>
+        <div class="nav-container">
+            <div class="logo"><a href="#">STREAM<span>HUB</span></a></div>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Cari judul video..." onkeyup="filterVideos()">
             </div>
-        </div>
 
-        <div class="table-responsive table-cinema">
-            <table class="table table-dark table-hover mb-0 align-middle">
-                <thead>
-                    <tr>
-                        <th>Studio / Layar</th>
-                        <th>Film Diputar</th>
-                        <th class="text-center">Jam Tayang</th>
-                        <th class="text-center">Status Pemutaran</th>
-                        <th class="text-center">Status Audio/Teknis</th>
-                        <th class="text-center">Bukti Layar</th>
-                    </tr>
-                </thead>
-                <tbody id="liveStatusStudio">
-                    <tr><td colspan="6" class="text-center py-4 text-white-50">Menghubungkan ke sistem bioskop...</td></tr>
-                </tbody>
-            </table>
+            <nav class="nav-links">
+                <a href="#">Beranda</a>
+                <a href="#">Populer</a>
+                <a href="#">Kategori</a>
+                <a href="#">Koleksi HD</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Slot Iklan ExoClick Atas (Header/Banner) -->
+    <div class="ad-container">
+        <div class="ad-banner" id="ad-slot-header">
+            <!-- PASTE KODE IKLAN EXOCLICK (Banner 728x90 atau Native) DI SINI -->
+            
         </div>
     </div>
-</section>
 
-<!-- POSTER SELEKSI HARI INI -->
-<section class="py-5">
-    <div class="container">
-        <h3 class="fw-extrabold mb-4 text-white"><i class="fa-solid fa-fire text-danger me-2"></i> Film Rekomendasi Hari Ini</h3>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <img id="poster1" src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600" class="movie-poster">
+    <!-- Content Grid -->
+    <main class="main-container">
+        <div class="section-header">
+            <h2 class="section-title">Koleksi Video Terbaru (Total 52)</h2>
+        </div>
+
+        <div class="video-grid" id="videoContainer">
+            <!-- JavaScript akan merender 52 video di sini secara otomatis -->
+        </div>
+    </main>
+
+    <!-- Slot Iklan ExoClick Bawah -->
+    <div class="ad-container">
+        <div class="ad-banner" id="ad-slot-footer">
+            <!-- PASTE KODE IKLAN EXOCLICK DI SINI -->
+            
+        </div>
+    </div>
+
+    <!-- Video Modal Player -->
+    <div class="player-modal" id="playerModal">
+        <div class="player-box">
+            <div class="player-header">
+                <span>Pemutar Video</span>
+                <span class="close-player" onclick="closePlayer()">&times;</span>
             </div>
-            <div class="col-md-4">
-                <img id="poster2" src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=600" class="movie-poster">
-            </div>
-            <div class="col-md-4">
-                <img id="poster3" src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600" class="movie-poster">
+            <div class="player-content">
+                <iframe id="videoIframe" src="" allowfullscreen></iframe>
             </div>
         </div>
     </div>
-</section>
 
-<footer class="py-5 border-top border-secondary border-opacity-25 text-center text-white-50">
-    <p class="mb-1 fw-bold text-white">CINESTAR CINEMA PREMIERE</p>
-    <small>© 2026 CineStar Entertainment. Semua Hak Dilindungi.</small>
-</footer>
+    <!-- Legal Pages Modal -->
+    <div class="legal-modal" id="legalModal">
+        <div class="legal-box">
+            <h3 id="legalTitle">Judul Legal</h3>
+            <div id="legalBody">Deskripsi legalitas...</div>
+            <button class="btn-close-legal" onclick="closeLegal()">Tutup</button>
+        </div>
+    </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a onclick="showLegal('privacy')">Privacy Policy</a>
+            <a onclick="showLegal('terms')">Terms of Service</a>
+            <a onclick="showLegal('dmca')">DMCA / 18 U.S.C. 2257</a>
+            <a onclick="showLegal('contact')">Contact Us</a>
+        </div>
+        <p>&copy; 2026 StreamHub. All rights reserved. Khusus Pengunjung 18+.</p>
+    </footer>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDeOduyu626TZ9CR0JGvzBH0qJAoArT8rk",
-        authDomain: "sppgbangunsari02-b5cb1.firebaseapp.com",
-        projectId: "sppgbangunsari02-b5cb1",
-        storageBucket: "sppgbangunsari02-b5cb1.firebasestorage.app",
-        messagingSenderId: "497486447370",
-        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // 1. Live Stats
-    db.collection("cinema_stats").doc("summary").onSnapshot((doc) => {
-        if(doc.exists) {
-            const d = doc.data();
-            document.getElementById("stat-film").innerText = d.total_film || "0";
-            document.getElementById("stat-studio").innerText = d.studio_aktif || "0";
-            document.getElementById("stat-tiket").innerText = d.tiket_terjual || "0";
-            document.getElementById("stat-okupansi").innerText = (d.okupansi || "0") + "%";
-        }
-    });
-
-    // 2. Poster Pilihan
-    db.collection("cinema_posters").doc("highlight").onSnapshot((doc) => {
-        if(doc.exists) {
-            const d = doc.data();
-            if(d.poster1) document.getElementById("poster1").src = d.poster1;
-            if(d.poster2) document.getElementById("poster2").src = d.poster2;
-            if(d.poster3) document.getElementById("poster3").src = d.poster3;
-        }
-    });
-
-    // 3. Status Studio Real-time
-    db.collection("studios").onSnapshot((snapshot) => {
-        const tbody = document.getElementById("liveStatusStudio");
-        tbody.innerHTML = "";
-        if(snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-white-50">Belum ada studio yang aktif jadwalnya hari ini.</td></tr>`;
-            return;
+    <!-- JavaScript Data Rendering & Navigation -->
+    <script>
+        // Check age verification
+        function confirmAge() {
+            document.getElementById('ageModal').style.display = 'none';
+            localStorage.setItem('ageVerified', 'true');
         }
 
-        snapshot.forEach((doc) => {
-            const s = doc.data();
-            let statusBadge = `<span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-hourglass-start me-1"></i> Standby</span>`;
-            if(s.status_tayang === "Sedang Memutar") {
-                statusBadge = `<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fa-solid fa-play me-1"></i> Sedang Tayang</span>`;
-            } else if(s.status_tayang === "Selesai") {
-                statusBadge = `<span class="badge bg-secondary px-3 py-2 rounded-pill"><i class="fa-solid fa-check me-1"></i> Selesai / Cleaning</span>`;
+        window.onload = function() {
+            if (localStorage.getItem('ageVerified') === 'true') {
+                document.getElementById('ageModal').style.display = 'none';
             }
+            renderVideos();
+        };
 
-            let buktiHTML = s.foto_bukti ? `<a href="${s.foto_bukti}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3"><i class="fa-solid fa-image me-1"></i>Cek Layar</a>` : `<span class="text-white-50 small">-</span>`;
+        // Data 52 Video
+        const qualities = ["4K", "HD", "1080p", "720p"];
+        const videoTitles = [
+            "Eksklusif HD Premium Video Streaming Full Scene #1",
+            "Koleksi Konten Spesial Kategori Terpopuler #2",
+            "Rekomendasi Video Terlaris Minggu Ini #3",
+            "Episode Terbaru Kategori Pilihan Pengunjung #4",
+            "Update Koleksi Video Sinematik Kualitas Unggulan #5",
+            "Highlights Video Paling Banyak Dicari Bulan Ini #6",
+            "Koleksi Spesial Edisi Terlengkap Durasi Panjang #7",
+            "Trending Stream Scene Kualitas Ultra HD 60fps #8",
+            "Pilihan Editor: Scene Favorit Pengunjung Murni HD #9",
+            "Rilisan Terbaru Seri Eksklusif Paling Populer #10",
+            "Koleksi Favorit Komunitas Streaming Terkemuka #11",
+            "Penutupan Spesial Season Video Paling Banyak Dicari #12",
+            "Video Populer Kategori Asia Sinematik Edisi #13",
+            "Sorotan Utama Pengunjung Rilisan Spesial #14",
+            "Koleksi Terpopuler Durasi Panjang Kualitas 4K #15",
+            "Rekaman Eksklusif Pilihan Komunitas Murni #16",
+            "Sinematik HD Murni Rilisan Paling Banyak Dicari #17",
+            "Kategori Favorit Spesial Akhir Pekan #18",
+            "Episode Full Scene HD Tanpa Sensor Edisi #19",
+            "Streaming Cepat Tanpa Buffering Kualitas Ultra #20",
+            "Video Spesial Pilihan Terbaik Bulan Ini #21",
+            "Update Rutin Harian Koleksi Terpopuler #22",
+            "Adegan Terbaik Sinematik Kualitas Premium #23",
+            "Highlight Momen Paling Banyak Ditonton #24",
+            "Koleksi Spesial Eksklusif Member VIP #25",
+            "Seri Terbaru Kategori Trending Pekan Ini #26",
+            "Video Paling Banyak Dicari Minggu Ini #27",
+            "Edisi Spesial Sinematik Kualitas Full HD #28",
+            "Rekomendasi Utama Pengunjung Hari Ini #29",
+            "Koleksi Lengkap Durasi Maksimal #30",
+            "Adengan Pilihan Editor Edisi Terbatas #31",
+            "Update Terbaru Kategori Unggulan #32",
+            "Koleksi Terlaris Edisi Malam Minggu #33",
+            "Sinematik Ultra HD Kualitas Suara Jernih #34",
+            "Video Favorit Pengunjung Setia #35",
+            "Rilisan Baru Kategori Populer Pekan Ini #36",
+            "Highlight Spesial Moment Terbaik #37",
+            "Video Paling Banyak Dilihat Sepanjang Masa #38",
+            "Edisi Khusus Koleksi Eksklusif HD #39",
+            "Kategori Asia Populer Paling Dicari #40",
+            "Trending Top 10 Video Minggu Ini #41",
+            "Streaming HD Pilihan Utama Pengguna #42",
+            "Episode Penuh Kategori Favorit #43",
+            "Sinematik Edisi Terlengkap 60fps #44",
+            "Video Eksklusif Kualitas 4K Jernih #45",
+            "Update Kategori Terpopuler Hari Ini #46",
+            "Highlights Spesial Rekomendasi Teratas #47",
+            "Adegan Sinematik Favorit Komunitas #48",
+            "Koleksi Spesial Edisi Terbaru #49",
+            "Video Trending Paling Hits Hari Ini #50",
+            "Edisi Penutup Koleksi Terpopuler #51",
+            "Grand Release Video Spesial Full HD #52"
+        ];
 
-            tbody.innerHTML += `
-                <tr>
-                    <td class="fw-bold text-white"><i class="fa-solid fa-tv text-danger me-2"></i>${s.nama_studio || "Studio"}</td>
-                    <td class="fw-semibold text-warning">${s.judul_film || "Belum Ditentukan"}</td>
-                    <td class="text-center font-monospace">${s.jam_mulai || "-"} WIB</td>
-                    <td class="text-center">${statusBadge}</td>
-                    <td class="text-center"><span class="badge bg-dark border border-secondary">${s.audio_status || "Dolby 7.1 OK"}</span></td>
-                    <td class="text-center">${buktiHTML}</td>
-                </tr>
-            `;
-        });
-    });
-</script>
+        function renderVideos() {
+            const container = document.getElementById('videoContainer');
+            let html = '';
+
+            for (let i = 0; i < videoTitles.length; i++) {
+                const quality = qualities[i % qualities.length];
+                const duration = `${12 + (i % 30)}:${(i * 7) % 60 < 10 ? '0' : ''}${(i * 7) % 60}`;
+                const views = `${50 + (i * 12)}K`;
+                const timeAgo = `${(i % 6) + 1} ${i % 2 === 0 ? 'hari' : 'minggu'} lalu`;
+                const imgId = 10 + i;
+
+                html += `
+                    <div class="card video-card">
+                        <div class="thumb-box" onclick="playVideo('https://cdn.videy.co/n2EGVsRT1.mp4')">
+                            <span class="badge-quality">${quality}</span>
+                            <img src="https://picsum.photos/400/225?random=${imgId}" alt="Thumbnail">
+                            <span class="badge-duration">${duration}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-title">
+                                <a href="#" onclick="playVideo('https://cdn.videy.co/n2EGVsRT1.mp4')">${videoTitles[i]}</a>
+                            </div>
+                            <div class="card-meta">
+                                <span>${views} x ditonton</span>
+                                <span>${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // Fitur Filter/Pencarian Video
+        function filterVideos() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.getElementsByClassName('video-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const title = cards[i].querySelector('.card-title').innerText.toLowerCase();
+                if (title.includes(input)) {
+                    cards[i].style.display = "flex";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        // Video Player Modal
+        function playVideo(url) {
+            document.getElementById('videoIframe').src = url;
+            document.getElementById('playerModal').style.display = 'flex';
+        }
+
+        function closePlayer() {
+            document.getElementById('videoIframe').src = '';
+            document.getElementById('playerModal').style.display = 'none';
+        }
+
+        // Legal Modals Content
+        const legalTexts = {
+            privacy: {
+                title: "Privacy Policy",
+                body: "Situs ini menghormati privasi pengguna. Kami tidak mengumpulkan data pribadi langsung tanpa persetujuan Anda. Kami dapat menggunakan cookie dari mitra iklan seperti ExoClick untuk menyajikan iklan yang relevan sesuai preferensi Anda."
+            },
+            terms: {
+                title: "Terms of Service",
+                body: "Dengan mengakses situs ini, Anda mengonfirmasi bahwa Anda telah berusia minimal 18 tahun atau usia legal dewasa di wilayah hukum Anda. Penggunaan materi di situs ini sepenuhnya menjadi tanggung jawab pengguna."
+            },
+            dmca: {
+                title: "DMCA & 18 U.S.C. 2257 Statement",
+                body: "Semua materi yang ditampilkan disediakan oleh pihak ketiga. Kami mematuhi standar hukum hak cipta (DMCA) dan regulasi konten dewasa 18 U.S.C. 2257. Jika terdapat materi yang melanggar hak cipta Anda, silakan hubungi kami untuk tindakan penghapusan segera."
+            },
+            contact: {
+                title: "Contact Us",
+                body: "Untuk pertanyaan seputar konten, iklan, atau laporan hak cipta, Anda dapat menghubungi tim kami melalui email di: admin@yourdomain.com"
+            }
+        };
+
+        function showLegal(type) {
+            if (legalTexts[type]) {
+                document.getElementById('legalTitle').innerText = legalTexts[type].title;
+                document.getElementById('legalBody').innerText = legalTexts[type].body;
+                document.getElementById('legalModal').style.display = 'flex';
+            }
+        }
+
+        function closeLegal() {
+            document.getElementById('legalModal').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
