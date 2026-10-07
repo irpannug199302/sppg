@@ -3,374 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPPG BANGUNSARI 02</title>
+<title>CineStar Premiere - Now Showing & Schedule</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
 :root {
-    --primary: #1e6091;
-    --secondary: #1a75ff;
-    --dark-blue: #0f172a;
-    --light: #f4f7fa;
-    --card-border: rgba(30, 96, 145, 0.08);
+    --bg-dark: #0a0e17;
+    --card-dark: #121929;
+    --cinema-red: #e50914;
+    --gold: #f59e0b;
+    --text-muted: #94a3b8;
 }
-
-html {
-    scroll-behavior: smooth;
-}
-
 body {
-    background: var(--light);
+    background-color: var(--bg-dark);
     font-family: 'Urbanist', sans-serif;
-    color: #334155;
+    color: #e2e8f0;
 }
-
-/* Pola Navigasi Premium */
 .navbar {
-    background: linear-gradient(135deg, var(--primary), #164e63);
-    padding: 18px 0;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    background: rgba(10, 14, 23, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
-.navbar-brand {
-    font-size: 20px;
-    letter-spacing: 0.5px;
-}
-.nav-link {
-    font-weight: 500;
-    transition: color 0.2s;
-    margin: 0 4px;
-}
-.nav-link:hover {
-    color: #bae6fd !important;
-}
-
-/* Hero Section Interaktif */
 .hero {
-    min-height: 85vh;
-    background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(30, 96, 145, 0.85)),
-    url('https://images.unsplash.com/photo-1509099836639-18ba1795216d');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    min-height: 75vh;
+    background: linear-gradient(rgba(10, 14, 23, 0.5), var(--bg-dark)),
+                url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1600') center/cover no-repeat;
     display: flex;
     align-items: center;
-    color: white;
 }
-.hero h1 {
-    letter-spacing: -1px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-.hero p {
-    color: #e2e8f0;
-    font-weight: 400;
-    max-width: 700px;
-    margin: 0 auto 30px auto;
-}
-
-/* Kartu Statistik Dashboard */
-.card-stat {
-    border: 1px solid var(--card-border);
+.stat-card {
+    background: var(--card-dark);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
-    background: #ffffff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 24px;
+    transition: transform 0.3s;
 }
-.card-stat h2 {
-    font-size: 38px;
-    font-weight: 700;
-    color: var(--dark-blue);
-    margin-bottom: 5px;
-}
-.card-stat p {
-    font-weight: 600;
-    color: #64748b;
-    margin-bottom: 0;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.card-stat:hover {
+.stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(30, 96, 145, 0.08) !important;
+    border-color: rgba(229, 9, 20, 0.4);
 }
-
-/* Khusus Kartu Persentase Utama */
-.bg-primary.card-stat {
-    background: linear-gradient(135deg, var(--secondary), var(--primary)) !important;
-    border: none;
-}
-.bg-primary.card-stat h2, .bg-primary.card-stat p {
-    color: #ffffff !important;
-}
-
-.section-title {
-    color: var(--dark-blue);
-    font-weight: 700;
-    position: relative;
-    padding-bottom: 12px;
-}
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background-color: var(--secondary);
-    border-radius: 2px;
-}
-
-/* Modifikasi Tombol */
-.btn-main {
-    background: #ffffff;
-    color: var(--primary);
-    font-weight: 700;
-    border-radius: 12px;
-    padding: 14px 28px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    transition: all 0.2s ease;
-}
-.btn-main:hover {
-    background: var(--light);
-    color: var(--secondary);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-}
-
-/* Desain Tabel Premium */
-.table-custom {
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(30, 96, 145, 0.03);
-}
-.table-custom thead {
-    background: linear-gradient(90deg, var(--primary), #1d4ed8) !important;
-}
-.table-custom th {
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-}
-.table table-hover tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-/* Galeri Foto Kontainer */
-.gallery-img {
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-    object-fit: cover;
-    height: 240px;
+.movie-poster {
+    height: 380px;
     width: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
-.gallery-img:hover {
+.movie-poster:hover {
     transform: scale(1.03);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.3);
 }
-
-/* Footer Elegan */
-.footer {
-    background: var(--dark-blue);
-    color: #94a3b8;
-    border-top: 5px solid var(--primary);
+.table-cinema {
+    background: var(--card-dark);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
 }
-.footer h5 {
-    color: #ffffff;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+.table-cinema thead th {
+    background: rgba(229, 9, 20, 0.15);
+    color: #ff8a8a;
+    border: none;
+    padding: 16px;
+}
+.table-cinema tbody td {
+    padding: 16px;
+    border-color: rgba(255,255,255,0.05);
+    color: #e2e8f0;
 }
 </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
-<div class="container">
-<a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
- <i class="fa-solid fa-building-shield"></i> SPPG BANGUNSARI 02
-</a>
-
-<button class="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#menu">
-<span class="navbar-toggler-icon"></span>
-</button>
-
-<div class="collapse navbar-collapse" id="menu">
-<ul class="navbar-nav ms-auto align-items-center">
-<li class="nav-item"><a class="nav-link" href="#">Beranda</a></li>
-<li class="nav-item"><a class="nav-link" href="#">Profil</a></li>
-<li class="nav-item"><a class="nav-link" href="#">Program MBG</a></li>
-<li class="nav-item"><a class="nav-link" href="#">Galeri</a></li>
-<li class="nav-item"><a class="nav-link" href="#">Kontak</a></li>
-<li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-<a class="btn btn-light fw-bold px-4 rounded-pill text-primary" href="login.html" style="font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-<i class="fa-solid fa-right-to-bracket me-1"></i> Login
-</a>
-</li>
-</ul>
-</div>
-</div>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-extrabold fs-4" href="#">
+            <i class="fa-solid fa-film text-danger me-2"></i> CINE<span class="text-danger">STAR</span>
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <a href="#jadwal" class="nav-link text-white-50">Jadwal Studio</a>
+            <a href="login.html" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold">
+                <i class="fa-solid fa-user-lock me-1"></i> Staff Portal
+            </a>
+        </div>
+    </div>
 </nav>
 
 <section class="hero">
-<div class="container text-center">
-<h1 class="display-3 fw-bold mb-3">
-SPPG BANGUNSARI 02
-</h1>
-
-<p class="lead fs-4 mb-4">
-Program Makan Bergizi Gratis Untuk Generasi Sehat Indonesia
-</p>
-
-<a href="#tabel-perjalanan" class="btn btn-main btn-lg px-4 py-3">
-<i class="fa-solid fa-route me-1"></i> Lihat Perjalanan Driver
-</a>
-</div>
+    <div class="container text-center py-5">
+        <span class="badge bg-danger px-3 py-2 rounded-pill fw-bold mb-3"><i class="fa-solid fa-sparkles me-1"></i> PREMIERE EXPERIENCES</span>
+        <h1 class="display-3 fw-extrabold mb-3 text-white">Nonton Film Pilihan dalam Kualitas IMAX & Dolby Atmos</h1>
+        <p class="lead text-white-50 max-w-700 mx-auto mb-4">Pantau jadwal tayang film terfavorit dan ketersediaan kursi studio secara real-time di CineStar Cinema.</p>
+        <a href="#jadwal" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow-lg">
+            <i class="fa-solid fa-ticket me-2"></i> Lihat Live Studio
+        </a>
+    </div>
 </section>
 
+<!-- STATISTIK BIOSKOP -->
 <section class="py-5">
-<div class="container">
-
-<h2 class="text-center section-title mb-5">
-Dashboard Distribusi
-</h2>
-
-<div class="row g-4">
-
-<div class="col-md-2 col-sm-6">
-<div class="card card-stat shadow-sm p-4 text-center h-100">
-<h2 id="stat-sekolah">0</h2>
-<p><i class="fa-solid fa-school text-primary me-1"></i> Sekolah</p>
-</div>
-</div>
-
-<div class="col-md-2 col-sm-6">
-<div class="card card-stat shadow-sm p-4 text-center h-100">
-<h2 id="stat-posyandu">0</h2>
-<p><i class="fa-solid fa-house-medical text-danger me-1"></i> Posyandu</p>
-</div>
-</div>
-
-<div class="col-md-3 col-sm-6">
-<div class="card card-stat shadow-sm p-4 text-center h-100">
-<h2 id="stat-porsi">0</h2>
-<p><i class="fa-solid fa-utensils text-primary me-1"></i> Porsi Hari Ini</p>
-</div>
-</div>
-
-<div class="col-md-2 col-sm-6">
-<div class="card card-stat shadow-sm p-4 text-center h-100">
-<h2 id="stat-driver">0</h2>
-<p><i class="fa-solid fa-truck text-primary me-1"></i> Driver Aktif</p>
-</div>
-</div>
-
-<div class="col-md-3 col-sm-12">
-<div class="card card-stat shadow-sm p-4 text-center bg-primary text-white h-100">
-<h2 id="stat-persentase">0%</h2>
-<p class="mb-0"><i class="fa-solid fa-circle-check me-1"></i> Terkirim</p>
-</div>
-</div>
-
-</div>
-</div>
-</section>
-
-<section id="tabel-perjalanan" class="py-5 bg-light">
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-11">
-            <div class="card p-4 border-0 shadow-sm rounded-4">
-                <h3 class="fw-bold text-center text-dark mb-2">Status Distribusi & Penjemputan Ompreng</h3>
-                <p class="text-center text-muted small mb-4">Sistem pemantauan real-time pengiriman & penjemputan ompreng</p>
-                
-                <div class="table-responsive table-custom">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr class="text-white">
-                                <th scope="col" class="ps-4 py-3 border-0">Nama Sekolah</th>
-                                <th scope="col" class="text-center py-3 border-0">Pengiriman</th>
-                                <th scope="col" class="text-center py-3 border-0">Waktu Tiba</th>
-                                <th scope="col" class="text-center py-3 border-0">Kesiapan Sekolah</th>
-                                <th scope="col" class="text-center py-3 border-0">Penjemputan Driver</th>
-                                <th scope="col" class="text-center py-3 border-0">Bukti</th>
-                            </tr>
-                        </thead>
-                        <tbody id="liveStatusSekolah">
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
-                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                                    Menghubungkan ke sistem distribusi...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <h2 class="fw-extrabold text-danger m-0" id="stat-film">0</h2>
+                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Film Tayang Hari Ini</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <h2 class="fw-extrabold text-warning m-0" id="stat-studio">0</h2>
+                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Studio Aktif</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <h2 class="fw-extrabold text-info m-0" id="stat-tiket">0</h2>
+                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Tiket Terjual</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card">
+                    <h2 class="fw-extrabold text-success m-0" id="stat-okupansi">0%</h2>
+                    <p class="text-white-50 small text-uppercase fw-bold mb-0 mt-2">Tingkat Okupansi Kursi</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </section>
 
-<section class="py-5 bg-white">
-<div class="container">
+<!-- LIVE STATUS STUDIO -->
+<section id="jadwal" class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h3 class="fw-extrabold m-0 text-white"><i class="fa-solid fa-clapperboard text-danger me-2"></i> Status Penayangan Studio</h3>
+                <p class="text-white-50 small mb-0">Informasi live langsung dari tim operator proyektor bioskop</p>
+            </div>
+        </div>
 
-<h2 class="section-title text-center mb-5">
-Tentang SPPG Bangunsari 02
-</h2>
-
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <p class="text-center fs-5 text-secondary lh-lg">
-        SPPG Bangunsari 02 merupakan satuan pelayanan pemenuhan gizi yang bertugas
-        mendistribusikan makanan bergizi kepada sekolah penerima manfaat secara tepat waktu,
-        aman, dan berkualitas tinggi demi mendukung perkembangan generasi penerus bangsa.
-        </p>
+        <div class="table-responsive table-cinema">
+            <table class="table table-dark table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Studio / Layar</th>
+                        <th>Film Diputar</th>
+                        <th class="text-center">Jam Tayang</th>
+                        <th class="text-center">Status Pemutaran</th>
+                        <th class="text-center">Status Audio/Teknis</th>
+                        <th class="text-center">Bukti Layar</th>
+                    </tr>
+                </thead>
+                <tbody id="liveStatusStudio">
+                    <tr><td colspan="6" class="text-center py-4 text-white-50">Menghubungkan ke sistem bioskop...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-
-</div>
 </section>
 
-<section class="py-5 bg-light">
-<div class="container">
-
-<h2 class="section-title text-center mb-5">
-MENU HARI INI
-</h2>
-
-<div class="row g-4">
-
-<div class="col-md-4">
-<img id="galeri-foto1" src="https://picsum.photos/600/400?1" class="img-fluid rounded-4 shadow-sm gallery-img">
-</div>
-
-<div class="col-md-4">
-<img id="galeri-foto2" src="https://picsum.photos/600/400?2" class="img-fluid rounded-4 shadow-sm gallery-img">
-</div>
-
-<div class="col-md-4">
-<img id="galeri-foto3" src="https://picsum.photos/600/400?3" class="img-fluid rounded-4 shadow-sm gallery-img">
-</div>
-
-</div>
-
-</div>
+<!-- POSTER SELEKSI HARI INI -->
+<section class="py-5">
+    <div class="container">
+        <h3 class="fw-extrabold mb-4 text-white"><i class="fa-solid fa-fire text-danger me-2"></i> Film Rekomendasi Hari Ini</h3>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <img id="poster1" src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600" class="movie-poster">
+            </div>
+            <div class="col-md-4">
+                <img id="poster2" src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=600" class="movie-poster">
+            </div>
+            <div class="col-md-4">
+                <img id="poster3" src="https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600" class="movie-poster">
+            </div>
+        </div>
+    </div>
 </section>
 
-<footer class="footer py-5">
-<div class="container text-center">
-<h5 class="mb-2">SPPG Bangunsari 02</h5>
-<p class="mb-1 text-white-50">Program Makan Bergizi Gratis</p>
-<p class="small mb-0 text-muted">© 2026 SPPG Bangunsari 02. Hak Cipta Dilindungi Undang-Undang.</p>
-</div>
+<footer class="py-5 border-top border-secondary border-opacity-25 text-center text-white-50">
+    <p class="mb-1 fw-bold text-white">CINESTAR CINEMA PREMIERE</p>
+    <small>© 2026 CineStar Entertainment. Semua Hak Dilindungi.</small>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <script>
@@ -380,102 +197,64 @@ MENU HARI INI
         projectId: "sppgbangunsari02-b5cb1",
         storageBucket: "sppgbangunsari02-b5cb1.firebasestorage.app",
         messagingSenderId: "497486447370",
-        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3",
-        measurementId: "G-TE7G4NTT96"
+        appId: "1:497486447370:web:0b2b6ce4297b48d18b70f3"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // 1. Ambil Angka Dashboard Real-time
-    db.collection("dashboard_data").doc("sppg_stats").onSnapshot((doc) => {
-        if (doc.exists) {
-            const data = doc.data();
-            document.getElementById('stat-sekolah').innerText = data.sekolah || "0";
-            document.getElementById('stat-posyandu').innerText = data.posyandu || "0";
-            document.getElementById('stat-porsi').innerText = data.porsi || "0"; 
-            document.getElementById('stat-driver').innerText = data.driver || "0";
+    // 1. Live Stats
+    db.collection("cinema_stats").doc("summary").onSnapshot((doc) => {
+        if(doc.exists) {
+            const d = doc.data();
+            document.getElementById("stat-film").innerText = d.total_film || "0";
+            document.getElementById("stat-studio").innerText = d.studio_aktif || "0";
+            document.getElementById("stat-tiket").innerText = d.tiket_terjual || "0";
+            document.getElementById("stat-okupansi").innerText = (d.okupansi || "0") + "%";
         }
     });
 
-    // 2. Ambil Link Foto Galeri Real-time
-    db.collection("galeri_data").doc("sppg_photos").onSnapshot((doc) => {
-        if (doc.exists) {
-            const data = doc.data();
-            if (data.foto1) document.getElementById('galeri-foto1').src = data.foto1;
-            if (data.foto2) document.getElementById('galeri-foto2').src = data.foto2;
-            if (data.foto3) document.getElementById('galeri-foto3').src = data.foto3;
+    // 2. Poster Pilihan
+    db.collection("cinema_posters").doc("highlight").onSnapshot((doc) => {
+        if(doc.exists) {
+            const d = doc.data();
+            if(d.poster1) document.getElementById("poster1").src = d.poster1;
+            if(d.poster2) document.getElementById("poster2").src = d.poster2;
+            if(d.poster3) document.getElementById("poster3").src = d.poster3;
         }
     });
 
-    // 3. Sinkronisasi Tabel Status Pengiriman & Ompreng Kosong
-    db.collection("sekolah_list").onSnapshot((querySnapshot) => {
-        const tableBody = document.getElementById('liveStatusSekolah');
-        tableBody.innerHTML = ""; 
-
-        if(querySnapshot.empty) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Belum ada daftar sekolah.</td></tr>`;
-            document.getElementById('stat-persentase').innerText = "0%";
+    // 3. Status Studio Real-time
+    db.collection("studios").onSnapshot((snapshot) => {
+        const tbody = document.getElementById("liveStatusStudio");
+        tbody.innerHTML = "";
+        if(snapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-white-50">Belum ada studio yang aktif jadwalnya hari ini.</td></tr>`;
             return;
         }
 
-        let totalSekolah = 0;
-        let sekolahSelesai = 0;
-
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            totalSekolah++; 
-            
-            // Status 1: Pengiriman Makanan
-            let badgePengiriman = `<span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-truck-moving me-1"></i> Perjalanan</span>`;
-            let jamTibaHTML = `<td class="text-center text-muted small">-</td>`;
-
-            if (data.status === "Sudah Sampai") {
-                sekolahSelesai++; 
-                badgePengiriman = `<span class="badge bg-success px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-circle-check me-1"></i> Terkirim</span>`;
-                if (data.waktu_tiba) {
-                    jamTibaHTML = `<td class="text-center fw-bold text-success" style="font-size: 13px;"><i class="fa-regular fa-clock me-1"></i> ${data.waktu_tiba}</td>`;
-                }
+        snapshot.forEach((doc) => {
+            const s = doc.data();
+            let statusBadge = `<span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-hourglass-start me-1"></i> Standby</span>`;
+            if(s.status_tayang === "Sedang Memutar") {
+                statusBadge = `<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fa-solid fa-play me-1"></i> Sedang Tayang</span>`;
+            } else if(s.status_tayang === "Selesai") {
+                statusBadge = `<span class="badge bg-secondary px-3 py-2 rounded-pill"><i class="fa-solid fa-check me-1"></i> Selesai / Cleaning</span>`;
             }
 
-            // Status 2: Kesiapan Ompreng oleh Sekolah
-            let badgeSekolah = `<span class="badge bg-secondary px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-box me-1"></i> Belum Ready</span>`;
-            if (data.ompreng_sekolah === "Siap Diambil") {
-                badgeSekolah = `<span class="badge bg-info text-dark px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-box-open me-1"></i> Siap Diambil</span>`;
-            }
+            let buktiHTML = s.foto_bukti ? `<a href="${s.foto_bukti}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill px-3"><i class="fa-solid fa-image me-1"></i>Cek Layar</a>` : `<span class="text-white-50 small">-</span>`;
 
-            // Status 3: Penjemputan Ompreng oleh Driver
-            let badgePenjemputan = `<span class="badge bg-light text-muted border px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-hourglass-start me-1"></i> Menunggu</span>`;
-            if (data.ompreng_driver === "Dalam Penjemputan") {
-                badgePenjemputan = `<span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-truck-pickup me-1"></i> Penjemputan</span>`;
-            } else if (data.ompreng_driver === "Sudah Sampai Dapur") {
-                badgePenjemputan = `<span class="badge bg-primary px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;"><i class="fa-solid fa-warehouse me-1"></i> Di Dapur</span>`;
-            }
-
-            // Foto Bukti
-            let fotoHTML = `<span class="text-muted small">-</span>`;
-            if(data.foto_bukti) {
-                fotoHTML = `<img src="${data.foto_bukti}" style="max-height: 40px; width: 55px; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); cursor: pointer;" onclick="window.open('${data.foto_bukti}', '_blank')">`;
-            }
-
-            const rowHTML = `
+            tbody.innerHTML += `
                 <tr>
-                    <td class="ps-4 fw-bold text-dark" style="font-size: 14px;">${data.nama || "Nama Sekolah Belum Diisi"}</td>
-                    <td class="text-center">${badgePengiriman}</td>
-                    ${jamTibaHTML}
-                    <td class="text-center">${badgeSekolah}</td>
-                    <td class="text-center">${badgePenjemputan}</td>
-                    <td class="text-center">${fotoHTML}</td>
+                    <td class="fw-bold text-white"><i class="fa-solid fa-tv text-danger me-2"></i>${s.nama_studio || "Studio"}</td>
+                    <td class="fw-semibold text-warning">${s.judul_film || "Belum Ditentukan"}</td>
+                    <td class="text-center font-monospace">${s.jam_mulai || "-"} WIB</td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-center"><span class="badge bg-dark border border-secondary">${s.audio_status || "Dolby 7.1 OK"}</span></td>
+                    <td class="text-center">${buktiHTML}</td>
                 </tr>
             `;
-            tableBody.innerHTML += rowHTML;
         });
-
-        // Hitung persentase pengiriman
-        let hitungPersen = Math.round((sekolahSelesai / totalSekolah) * 100) || 0;
-        document.getElementById('stat-persentase').innerText = hitungPersen + "%";
     });
 </script>
-
 </body>
 </html>
