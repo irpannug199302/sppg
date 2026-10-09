@@ -135,6 +135,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const targetId = urlParams.get('v');
 
+      // Mencocokkan ID video dari parameter URL dengan data spreadsheet
       const found = (videos || []).find(v => String(v.ID || v.id) === String(targetId));
 
       if (!found) {
@@ -146,12 +147,34 @@
         id: found.ID || found.id,
         Title: found.Title || 'Tanpa Judul',
         Category: found.Category || 'Umum',
-        Description: found.Description || 'Tidak ada deskripsi.',
+        Description: found.Description || 'Tidak ada deskripsi tersedia.',
         CDN_URL: found.CDN_URL || found.Video_URL || '',
         Views: parseInt(found.Views || found.Views_Count || 0, 10),
         Likes: parseInt(found.Likes || 0, 10),
         isLiked: false
       };
+
+      // Set Title agar Histats membaca judul video dari spreadsheet dengan akurat
+      document.title = `[${currentVideo.id}] ${currentVideo.Title}`;
+
+      // Memasukkan data ke elemen HTML halaman watch
+      document.getElementById('videoTitle').innerText = currentVideo.Title;
+      document.getElementById('videoCategory').innerHTML = `<i class="fa-solid fa-tag"></i> ${currentVideo.Category}`;
+      document.getElementById('videoViews').innerHTML = `<i class="fa-solid fa-eye"></i> ${currentVideo.Views.toLocaleString('id-ID')} x ditonton`;
+      document.getElementById('videoDesc').innerText = currentVideo.Description;
+
+      // Memuat sumber video ke player
+      const player = document.getElementById('mainPlayer');
+      player.src = currentVideo.CDN_URL;
+      player.load();
+
+      player.play().catch((err) => {
+        console.log("Autoplay dicegah oleh browser, silakan klik tombol play manual:", err);
+      });
+
+      updateLikeUI();
+      pingIncrementView(currentVideo.id);
+    }
 
       // Set Title agar Histats membaca judul video dari spreadsheet dengan akurat
       document.title = `[${currentVideo.id}] ${currentVideo.Title}`;
