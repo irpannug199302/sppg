@@ -81,7 +81,7 @@
     <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda</a>
     
     <div class="player-wrapper" id="playerWrapper">
-      <video id="mainPlayer" controls autoplay>
+      <video id="mainPlayer" controls autoplay crossorigin="anonymous">
         <source id="videoSource" src="" type="video/mp4">
         Browser Anda tidak mendukung pemutar video.
       </video>
@@ -164,13 +164,19 @@
       const player = document.getElementById('mainPlayer');
       const source = document.getElementById('videoSource');
       
+      console.log("Memuat CDN URL:", currentVideo.CDN_URL);
       source.src = currentVideo.CDN_URL;
       player.load();
-      
+
+      player.onerror = function(e) {
+        console.error("Gagal memutar video. Error:", e);
+        alert("Gagal memuat video. Pastikan tautan CDN_URL di Google Spreadsheet dapat diakses publik.");
+      };
+
       const playPromise = player.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          console.log("Autoplay diblokir browser, memerlukan interaksi klik.");
+        playPromise.catch((err) => {
+          console.log("Autoplay diblokir browser, klik tombol play manual:", err);
         });
       }
 
