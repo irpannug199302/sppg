@@ -80,9 +80,9 @@
   <div class="watch-container">
     <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda</a>
     
+    <!-- Player Wrapper diperbarui agar langsung menerima src tanpa source terpisah jika diperlukan -->
     <div class="player-wrapper" id="playerWrapper">
-      <video id="mainPlayer" controls autoplay crossorigin="anonymous">
-        <source id="videoSource" src="" type="video/mp4">
+      <video id="mainPlayer" controls autoplay playsinline preload="auto">
         Browser Anda tidak mendukung pemutar video.
       </video>
     </div>
@@ -161,24 +161,14 @@
       document.getElementById('videoViews').innerHTML = `<i class="fa-solid fa-eye"></i> ${currentVideo.Views.toLocaleString('id-ID')} x ditonton`;
       document.getElementById('videoDesc').innerText = currentVideo.Description;
 
+      // Memasang langsung URL video ke elemen video utama
       const player = document.getElementById('mainPlayer');
-      const source = document.getElementById('videoSource');
-      
-      console.log("Memuat CDN URL:", currentVideo.CDN_URL);
-      source.src = currentVideo.CDN_URL;
+      player.src = currentVideo.CDN_URL;
       player.load();
 
-      player.onerror = function(e) {
-        console.error("Gagal memutar video. Error:", e);
-        alert("Gagal memuat video. Pastikan tautan CDN_URL di Google Spreadsheet dapat diakses publik.");
-      };
-
-      const playPromise = player.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((err) => {
-          console.log("Autoplay diblokir browser, klik tombol play manual:", err);
-        });
-      }
+      player.play().catch((err) => {
+        console.log("Autoplay diblokir browser, pengguna perlu menekan tombol play:", err);
+      });
 
       updateLikeUI();
       pingIncrementView(currentVideo.id);
