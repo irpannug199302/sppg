@@ -380,9 +380,9 @@
             </div>
           </div>
         `;
-        // Mengarahkan ke halaman watch.html secara fisik saat kartu diklik
+        // Mengarahkan ke watch.html dengan menyertakan parameter v dan title
         card.onclick = () => {
-          window.location.href = `watch.html?v=${encodeURIComponent(video.id)}`;
+          window.location.href = `watch.html?v=${encodeURIComponent(video.id)}&title=${encodeURIComponent(video.Title)}`;
         };
         grid.appendChild(card);
       });
