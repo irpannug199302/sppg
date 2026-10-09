@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitle">StreamTube - Platform Video Modern</title>
+  <title id="pageTitle">Zonewave - Platform Video Modern</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -501,7 +501,7 @@
 
   <header class="navbar">
     <a href="#" class="logo">
-      <i class="fa-solid fa-circle-play"></i> StreamTube
+      <i class="fa-solid fa-circle-play"></i> Zonewave
     </a>
     
     <div class="search-box">
@@ -584,14 +584,14 @@
       <a href="#">Contact</a>
     </div>
     <div class="copyright">
-      &copy; 2026 <strong>StreamTube</strong>. All Rights Reserved.
+      &copy; 2026 <strong>Zonewave</strong>. All Rights Reserved.
     </div>
   </footer>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbya8miU2RQxomRMAr-3S5r7d6sHw-7kNlgJup0n5l_KUQWc_XYVfLzYbKRDEO9av5jnDQ/exec";
     const VAST_AD_URL = "https://s.magsrv.com/v1/vast.php?idz=6037948";
-    const DEFAULT_SITE_TITLE = "StreamTube - Platform Video Modern";
+    const DEFAULT_SITE_TITLE = "Zonewave - Platform Video Modern";
     
     let allVideosData = [];
     let currentVideo = null;
@@ -641,7 +641,7 @@
           Category: video.Category || 'Umum',
           Description: video.Description || 'Tidak ada deskripsi tersedia.',
           CDN_URL: video.CDN_URL || video.Video_URL || '',
-          Thumbnail_URL: video.Thumbnail_URL || 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=StreamTube',
+          Thumbnail_URL: video.Thumbnail_URL || 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=Zonewave',
           Views: parseInt(rawViews, 10) || 0,
           Likes: parseInt(rawLikes, 10) || 0,
           isLiked: false
@@ -687,7 +687,7 @@
         card.id = `card-${video.id}`;
         card.innerHTML = `
           <div class="thumbnail-box">
-            <img src="${video.Thumbnail_URL}" alt="${video.Title}" onerror="this.src='https://via.placeholder.com/320x180/1f1f1f/aaaaaa?text=StreamTube'">
+            <img src="${video.Thumbnail_URL}" alt="${video.Title}" onerror="this.src='https://via.placeholder.com/320x180/1f1f1f/aaaaaa?text=Zonewave'">
           </div>
           <div class="card-details">
             <div class="card-title">${video.Title}</div>
@@ -899,7 +899,7 @@
 
       const shareData = {
         title: currentVideo.Title,
-        text: `Saksikan "${currentVideo.Title}" di StreamTube!`,
+        text: `Saksikan "${currentVideo.Title}" di Zonewave!`,
         url: videoShareUrl
       };
 
