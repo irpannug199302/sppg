@@ -80,7 +80,6 @@
   <div class="watch-container">
     <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda</a>
     
-    <!-- Player Wrapper diperbarui agar langsung menerima src tanpa source terpisah jika diperlukan -->
     <div class="player-wrapper" id="playerWrapper">
       <video id="mainPlayer" controls autoplay playsinline preload="auto">
         Browser Anda tidak mendukung pemutar video.
@@ -135,7 +134,6 @@
       const urlParams = new URLSearchParams(window.location.search);
       const targetId = urlParams.get('v');
 
-      // Mencocokkan ID video dari parameter URL dengan data spreadsheet
       const found = (videos || []).find(v => String(v.ID || v.id) === String(targetId));
 
       if (!found) {
@@ -154,43 +152,35 @@
         isLiked: false
       };
 
-      // Set Title agar Histats membaca judul video dari spreadsheet dengan akurat
-      document.title = `[${currentVideo.id}] ${currentVideo.Title}`;
+      // 1. Ubah Judul Dokumen agar Histats merekam judul dari spreadsheet
+      const sheetTitle = `[${currentVideo.id}] ${currentVideo.Title}`;
+      document.title = sheetTitle;
 
-      // Memasukkan data ke elemen HTML halaman watch
+      // 2. Kirim pemicu pelacakan manual ke Histats untuk halaman fisik ini
+      try {
+        if (window._Hasync) {
+          window._Hasync.push(['Histats.title', sheetTitle]);
+          window._Hasync.push(['Histats.track_hits', '']);
+        }
+        const pixel = new Image();
+        pixel.src = "https://sstatic1.histats.com/0.gif?4927758&101&fasi=1&track_hits=1&title=" + encodeURIComponent(sheetTitle) + "&t=" + Date.now();
+      } catch (err) {
+        console.warn("Histats tracking error:", err);
+      }
+
+      // 3. Masukkan data ke elemen HTML
       document.getElementById('videoTitle').innerText = currentVideo.Title;
       document.getElementById('videoCategory').innerHTML = `<i class="fa-solid fa-tag"></i> ${currentVideo.Category}`;
       document.getElementById('videoViews').innerHTML = `<i class="fa-solid fa-eye"></i> ${currentVideo.Views.toLocaleString('id-ID')} x ditonton`;
       document.getElementById('videoDesc').innerText = currentVideo.Description;
 
-      // Memuat sumber video ke player
+      // 4. Putar video
       const player = document.getElementById('mainPlayer');
       player.src = currentVideo.CDN_URL;
       player.load();
 
       player.play().catch((err) => {
-        console.log("Autoplay dicegah oleh browser, silakan klik tombol play manual:", err);
-      });
-
-      updateLikeUI();
-      pingIncrementView(currentVideo.id);
-    }
-
-      // Set Title agar Histats membaca judul video dari spreadsheet dengan akurat
-      document.title = `[${currentVideo.id}] ${currentVideo.Title}`;
-
-      document.getElementById('videoTitle').innerText = currentVideo.Title;
-      document.getElementById('videoCategory').innerHTML = `<i class="fa-solid fa-tag"></i> ${currentVideo.Category}`;
-      document.getElementById('videoViews').innerHTML = `<i class="fa-solid fa-eye"></i> ${currentVideo.Views.toLocaleString('id-ID')} x ditonton`;
-      document.getElementById('videoDesc').innerText = currentVideo.Description;
-
-      // Memasang langsung URL video ke elemen video utama
-      const player = document.getElementById('mainPlayer');
-      player.src = currentVideo.CDN_URL;
-      player.load();
-
-      player.play().catch((err) => {
-        console.log("Autoplay diblokir browser, pengguna perlu menekan tombol play:", err);
+        console.log("Autoplay diblokir browser, silakan klik tombol play manual:", err);
       });
 
       updateLikeUI();
