@@ -153,19 +153,26 @@
         isLiked: false
       };
 
-      // **INI BAGIAN UTAMA AGAR HISTATS MEMBACA JUDUL DARI SPREADSHEET**
+      // Set Title agar Histats membaca judul video dari spreadsheet dengan akurat
       document.title = `[${currentVideo.id}] ${currentVideo.Title}`;
 
       document.getElementById('videoTitle').innerText = currentVideo.Title;
-      document.getElementById('videoCategory.innerHTML') = `<i class="fa-solid fa-tag"></i> ${currentVideo.Category}`;
       document.getElementById('videoCategory').innerHTML = `<i class="fa-solid fa-tag"></i> ${currentVideo.Category}`;
       document.getElementById('videoViews').innerHTML = `<i class="fa-solid fa-eye"></i> ${currentVideo.Views.toLocaleString('id-ID')} x ditonton`;
       document.getElementById('videoDesc').innerText = currentVideo.Description;
 
       const player = document.getElementById('mainPlayer');
-      document.getElementById('videoSource').src = currentVideo.CDN_URL;
+      const source = document.getElementById('videoSource');
+      
+      source.src = currentVideo.CDN_URL;
       player.load();
-      player.play().catch(() => {});
+      
+      const playPromise = player.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          console.log("Autoplay diblokir browser, memerlukan interaksi klik.");
+        });
+      }
 
       updateLikeUI();
       pingIncrementView(currentVideo.id);
