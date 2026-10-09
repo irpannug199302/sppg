@@ -157,35 +157,35 @@
         isLiked: false
       };
 
-      // 1. Ubah Judul Dokumen agar Histats merekam judul dari spreadsheet
+      // Set Title browser dan kirim piksel pelacakan paksa ke Histats
       const sheetTitle = `[${currentVideo.id}] ${currentVideo.Title}`;
       document.title = sheetTitle;
 
-      // 2. Kirim pemicu pelacakan manual ke Histats untuk halaman fisik ini
       try {
         if (window._Hasync) {
           window._Hasync.push(['Histats.title', sheetTitle]);
           window._Hasync.push(['Histats.track_hits', '']);
         }
+        const virtualUrl = window.location.origin + window.location.pathname + '/watch?v=' + currentVideo.id + '&title=' + encodeURIComponent(currentVideo.Title);
         const pixel = new Image();
-        pixel.src = "https://sstatic1.histats.com/0.gif?4927758&101&fasi=1&track_hits=1&title=" + encodeURIComponent(sheetTitle) + "&t=" + Date.now();
+        pixel.src = "https://sstatic1.histats.com/0.gif?4927758&101&fasi=1&track_hits=1&title=" + encodeURIComponent(sheetTitle) + "&url=" + encodeURIComponent(virtualUrl) + "&t=" + Date.now();
       } catch (err) {
         console.warn("Histats tracking error:", err);
       }
 
-      // 3. Masukkan data ke elemen HTML
+      // Memasukkan data ke elemen HTML halaman watch
       document.getElementById('videoTitle').innerText = currentVideo.Title;
       document.getElementById('videoCategory').innerHTML = `<i class="fa-solid fa-tag"></i> ${currentVideo.Category}`;
       document.getElementById('videoViews').innerHTML = `<i class="fa-solid fa-eye"></i> ${currentVideo.Views.toLocaleString('id-ID')} x ditonton`;
       document.getElementById('videoDesc').innerText = currentVideo.Description;
 
-      // 4. Putar video
+      // Memuat sumber video ke player
       const player = document.getElementById('mainPlayer');
       player.src = currentVideo.CDN_URL;
       player.load();
 
       player.play().catch((err) => {
-        console.log("Autoplay diblokir browser, silakan klik tombol play manual:", err);
+        console.log("Autoplay dicegah oleh browser, silakan klik tombol play manual:", err);
       });
 
       updateLikeUI();
