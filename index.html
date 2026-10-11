@@ -432,8 +432,17 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 16px;
       min-height: 50px;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .banner-ad-container iframe {
+      max-width: 100%;
+      border: none;
+      display: block;
+      margin: 0 auto;
     }
 
     /* Toast Notification */
@@ -621,20 +630,11 @@
     function loadBannerAdFromSpreadsheet() {
       if (!ADS_API_URL) return;
 
-      // 1. Coba melalui JSONP
-      const script = document.createElement('script');
-      script.src = ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "action=getBanner&callback=handleBannerAd&t=" + Date.now();
-      
-      script.onerror = function() {
-        const fallbackScript = document.createElement('script');
-        fallbackScript.src = ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "callback=handleBannerAd&t=" + Date.now();
-        document.body.appendChild(fallbackScript);
-      };
-      
-      document.body.appendChild(script);
+      const cacheBuster = "t=" + Date.now();
+      const fetchUrl = ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "action=getBanner&" + cacheBuster;
 
-      // 2. Backup fetch jika endpoint mengembalikan JSON
-      fetch(ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "action=getBanner&t=" + Date.now())
+      // 1. Ambil data dengan Fetch
+      fetch(fetchUrl)
         .then(res => res.text())
         .then(text => {
           let cleaned = text.trim();
@@ -644,9 +644,24 @@
           try {
             const parsed = JSON.parse(cleaned);
             handleBannerAd(parsed);
-          } catch(e) {}
+          } catch(e) {
+            console.warn("Gagal parse JSON dari fetch iklan, beralih ke JSONP:", e);
+            loadAdViaJSONP();
+          }
         })
-        .catch(() => {});
+        .catch(() => {
+          loadAdViaJSONP();
+        });
+    }
+
+    // Fallback JSONP jika CORS memblokir Fetch
+    function loadAdViaJSONP() {
+      const script = document.createElement('script');
+      script.src = ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "action=getBanner&callback=handleBannerAd&t=" + Date.now();
+      script.onerror = function() {
+        console.error("Gagal memuat iklan melalui JSONP.");
+      };
+      document.body.appendChild(script);
     }
 
     // Callback saat data iklan diterima dari Spreadsheet
@@ -661,23 +676,22 @@
       }
 
       if (Array.isArray(adData)) {
-        if (adData[0] && (adData[0].Key !== undefined || adData[0].key !== undefined)) {
-          adData.forEach(row => {
-            const k = (row.Key || row.key || '').trim().toLowerCase();
+        adData.forEach(row => {
+          if (!row) return;
+          if (row.Key !== undefined || row.key !== undefined) {
+            const k = String(row.Key || row.key || '').trim().toLowerCase();
             const v = (row.Value !== undefined ? row.Value : row.value);
             if (k) config[k] = v;
-          });
-        } else if (Array.isArray(adData[0])) {
-          adData.forEach(row => {
+          } else if (Array.isArray(row)) {
             const k = String(row[0] || '').trim().toLowerCase();
             const v = row[1];
             if (k && k !== 'key') config[k] = v;
-          });
-        } else if (typeof adData[0] === 'object') {
-          Object.keys(adData[0]).forEach(k => {
-            config[k.toLowerCase()] = adData[0][k];
-          });
-        }
+          } else if (typeof row === 'object') {
+            Object.keys(row).forEach(k => {
+              config[k.toLowerCase()] = row[k];
+            });
+          }
+        });
       } else if (typeof adData === 'object') {
         Object.keys(adData).forEach(k => {
           config[k.toLowerCase()] = adData[k];
@@ -686,10 +700,10 @@
 
       // Simpan konfigurasi
       cachedAdConfig = {
-        banner_key: config.banner_key || config.key || config.ad_key || '',
+        banner_key: String(config.banner_key || config.key || config.ad_key || '').trim(),
         width: parseInt(config.width || 320, 10),
         height: parseInt(config.height || 50, 10),
-        banner_src: config.banner_src || config.src || '',
+        banner_src: String(config.banner_src || config.src || '').trim(),
         html: config.html || config.code || config.ad_code || ''
       };
 
@@ -701,7 +715,7 @@
       }
     };
 
-    // Fungsi khusus untuk merender iklan ke dalam modal
+    // Fungsi render banner iklan ke dalam modal secara aman & lancar
     function renderBannerAd() {
       const container = document.getElementById('bannerContainer');
       if (!container) return;
@@ -714,63 +728,61 @@
       const width = cachedAdConfig.width || 320;
       const height = cachedAdConfig.height || 50;
 
-      container.innerHTML = '';
+      let adContent = '';
 
+      if (cachedAdConfig.html) {
+        adContent = cachedAdConfig.html;
+      } else if (cachedAdConfig.banner_key) {
+        const key = cachedAdConfig.banner_key;
+        const src = cachedAdConfig.banner_src || `https://gymnasiumabc.com/${key}/invoke.js`;
+        adContent = `
+          <script type="text/javascript">
+            atOptions = {
+              'key' : '${key}',
+              'format' : 'iframe',
+              'height' : ${height},
+              'width' : ${width},
+              'params' : {}
+            };
+          <\/script>
+          <script type="text/javascript" src="${src}"><\/script>
+        `;
+      }
+
+      const htmlDocument = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <base target="_blank">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              background: transparent; 
+              display: flex; 
+              justify-content: center; 
+              align-items: center; 
+              overflow: hidden; 
+            }
+          </style>
+        </head>
+        <body>
+          ${adContent}
+        </body>
+        </html>
+      `;
+
+      // Gunakan iframe dengan srcdoc agar script document.write bawaan Adsterra/iklan tidak terblokir
       const iframe = document.createElement('iframe');
       iframe.width = width;
       iframe.height = height;
+      iframe.scrolling = 'no';
       iframe.style.border = 'none';
       iframe.style.overflow = 'hidden';
-      iframe.scrolling = 'no';
-      iframe.frameBorder = '0';
-      iframe.setAttribute('allowtransparency', 'true');
+      iframe.srcdoc = htmlDocument;
 
+      container.innerHTML = '';
       container.appendChild(iframe);
-
-      setTimeout(() => {
-        try {
-          const doc = iframe.contentWindow || iframe.contentDocument;
-          const iframeDoc = doc.document || doc;
-          iframeDoc.open();
-
-          let adBody = '';
-          if (cachedAdConfig.html) {
-            adBody = cachedAdConfig.html;
-          } else if (cachedAdConfig.banner_key) {
-            const key = cachedAdConfig.banner_key;
-            const src = cachedAdConfig.banner_src || `https://gymnasiumabc.com/${key}/invoke.js`;
-            adBody = `
-              <script type="text/javascript">
-                var atOptions = {
-                  'key' : '${key}',
-                  'format' : 'iframe',
-                  'height' : ${height},
-                  'width' : ${width},
-                  'params' : {}
-                };
-              <\/script>
-              <script type="text/javascript" src="${src}"><\/script>
-            `;
-          }
-
-          iframeDoc.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; overflow: hidden; }
-              </style>
-            </head>
-            <body>
-              ${adBody}
-            </body>
-            </html>
-          `);
-          iframeDoc.close();
-        } catch (e) {
-          console.error("Gagal merender iframe iklan:", e);
-        }
-      }, 50);
     }
 
     function formatViews(views) {
@@ -816,7 +828,7 @@
           Category: video.Category || 'Umum',
           Description: video.Description || 'Tidak ada deskripsi tersedia.',
           CDN_URL: video.CDN_URL || video.Video_URL || '',
-          Thumbnail_URL: video.Thumbnail_URL || 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=Fight',
+          Thumbnail_URL: video.Thumbnail_URL || 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=Video',
           Views: parseInt(rawViews, 10) || 0,
           Likes: parseInt(rawLikes, 10) || 0,
           isLiked: false
@@ -861,7 +873,7 @@
         card.id = `card-${video.id}`;
         card.innerHTML = `
           <div class="thumbnail-box">
-            <img src="${video.Thumbnail_URL}" alt="${video.Title}" onerror="this.src='https://via.placeholder.com/320x180/1f1f1f/aaaaaa?text=Fight'">
+            <img src="${video.Thumbnail_URL}" alt="${video.Title}" onerror="this.src='https://via.placeholder.com/320x180/1f1f1f/aaaaaa?text=Video'">
           </div>
           <div class="card-details">
             <div class="card-title">${video.Title}</div>
@@ -1090,7 +1102,7 @@
       }
     });
 
-    // Inisialisasi: Panggil video dan konfigurasi banner iklan dari spreadsheet
+    // Inisialisasi: Panggil konfigurasi banner iklan dan data video dari spreadsheet
     loadBannerAdFromSpreadsheet();
     loadVideos();
   </script>
