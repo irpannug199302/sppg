@@ -433,6 +433,7 @@
       align-items: center;
       width: 100%;
       margin-top: 10px;
+      min-height: 50px;
     }
 
     /* Toast Notification */
@@ -576,14 +577,8 @@
           Deskripsi video akan muncul di sini.
         </div>
 
-        <!-- Banner Ad Script (Centered) -->
-        <div class="banner-ad-container">
-          <div>
-            <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
-            <ins class="eas6a97888e2" data-zoneid="6039728"></ins>
-            <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-          </div>
-        </div>
+        <!-- Banner Ad Container (Hanya diisi otomatis dari Spreadsheet) -->
+        <div class="banner-ad-container" id="bannerContainer"></div>
       </div>
     </div>
   </div>
@@ -620,87 +615,107 @@
     let allVideosData = [];
     let currentVideo = null;
     let toastTimeout = null;
-    let cachedAdConfig = null; // Menyimpan data konfigurasi iklan
+    let cachedAdConfig = null;
 
     // --- FUNGSI MENGAMBIL IKLAN BANNER DARI SPREADSHEET ---
     function loadBannerAdFromSpreadsheet() {
-      if (!ADS_API_URL || ADS_API_URL.includes("https://script.google.com/macros/s/AKfycbzzi3oM2bHpoCFrosdqyAW8-UDCcmn9c_Eanm2YpjKG92L00xNvaDyuTsAvIm1P7fud/execL")) {
-        console.warn("ADS_API_URL belum diisi dengan URL deployment iklan.");
-        return;
-      }
+      if (!ADS_API_URL) return;
 
+      // 1. Coba melalui JSONP
       const script = document.createElement('script');
-      script.src = ADS_API_URL + "?action=getBanner&callback=handleBannerAd&t=" + new Date().getTime();
+      script.src = ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "action=getBanner&callback=handleBannerAd&t=" + Date.now();
+      
       script.onerror = function() {
-        console.warn("Gagal memuat konfigurasi iklan dari spreadsheet.");
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "callback=handleBannerAd&t=" + Date.now();
+        document.body.appendChild(fallbackScript);
       };
+      
       document.body.appendChild(script);
+
+      // 2. Backup fetch jika endpoint mengembalikan JSON
+      fetch(ADS_API_URL + (ADS_API_URL.includes('?') ? '&' : '?') + "action=getBanner&t=" + Date.now())
+        .then(res => res.text())
+        .then(text => {
+          let cleaned = text.trim();
+          if (cleaned.startsWith('handleBannerAd(')) {
+            cleaned = cleaned.replace(/^handleBannerAd\(/, '').replace(/\);?$/, '');
+          }
+          try {
+            const parsed = JSON.parse(cleaned);
+            handleBannerAd(parsed);
+          } catch(e) {}
+        })
+        .catch(() => {});
     }
 
     // Callback saat data iklan diterima dari Spreadsheet
-    function handleBannerAd(adData) {
+    window.handleBannerAd = function(adData) {
       if (!adData) return;
 
       let config = {};
 
+      if (typeof adData === 'object' && !Array.isArray(adData)) {
+        if (adData.data) adData = adData.data;
+        else if (adData.result) adData = adData.result;
+      }
+
       if (Array.isArray(adData)) {
-        // Kasus 1: Format baris objek [{Key: 'banner_key', Value: '...'}, ...]
         if (adData[0] && (adData[0].Key !== undefined || adData[0].key !== undefined)) {
           adData.forEach(row => {
-            const k = (row.Key || row.key || '').trim();
+            const k = (row.Key || row.key || '').trim().toLowerCase();
             const v = (row.Value !== undefined ? row.Value : row.value);
             if (k) config[k] = v;
           });
-        }
-        // Kasus 2: Format array 2 dimensi [["banner_key", "..."], ...]
-        else if (Array.isArray(adData[0])) {
+        } else if (Array.isArray(adData[0])) {
           adData.forEach(row => {
-            const k = String(row[0] || '').trim();
+            const k = String(row[0] || '').trim().toLowerCase();
             const v = row[1];
-            if (k && k !== 'Key') config[k] = v;
+            if (k && k !== 'key') config[k] = v;
+          });
+        } else if (typeof adData[0] === 'object') {
+          Object.keys(adData[0]).forEach(k => {
+            config[k.toLowerCase()] = adData[0][k];
           });
         }
-        // Kasus 3: Format array baris biasa [{banner_key: '...'}]
-        else if (adData[0] && typeof adData[0] === 'object') {
-          config = adData[0];
-        }
       } else if (typeof adData === 'object') {
-        // Kasus 4: Langsung berbentuk objek { banner_key: '...' }
-        config = adData;
+        Object.keys(adData).forEach(k => {
+          config[k.toLowerCase()] = adData[k];
+        });
       }
 
       // Simpan konfigurasi
       cachedAdConfig = {
-        banner_key: config.banner_key || config.Key || config.key,
+        banner_key: config.banner_key || config.key || config.ad_key || '',
         width: parseInt(config.width || 320, 10),
         height: parseInt(config.height || 50, 10),
-        banner_src: config.banner_src || config.src
+        banner_src: config.banner_src || config.src || '',
+        html: config.html || config.code || config.ad_code || ''
       };
 
       console.log("Konfigurasi Iklan Berhasil Dimuat:", cachedAdConfig);
 
-      // Jika modal video sudah terlanjur terbuka saat iklan baru terambil, render segera
       const modal = document.getElementById('videoModal');
       if (modal && modal.style.display === 'flex') {
         renderBannerAd();
       }
-    }
+    };
 
     // Fungsi khusus untuk merender iklan ke dalam modal
     function renderBannerAd() {
-      if (!cachedAdConfig || !cachedAdConfig.banner_key) return;
-
       const container = document.getElementById('bannerContainer');
       if (!container) return;
 
-      const key = cachedAdConfig.banner_key;
+      if (!cachedAdConfig || (!cachedAdConfig.banner_key && !cachedAdConfig.html)) {
+        container.innerHTML = '';
+        return;
+      }
+
       const width = cachedAdConfig.width || 320;
       const height = cachedAdConfig.height || 50;
-      const src = cachedAdConfig.banner_src || `https://gymnasiumabc.com/${key}/invoke.js`;
 
       container.innerHTML = '';
 
-      // Buat iframe baru
       const iframe = document.createElement('iframe');
       iframe.width = width;
       iframe.height = height;
@@ -712,21 +727,19 @@
 
       container.appendChild(iframe);
 
-      // Gunakan iframe document.write agar kompatibel dengan referensi domain
       setTimeout(() => {
         try {
           const doc = iframe.contentWindow || iframe.contentDocument;
           const iframeDoc = doc.document || doc;
           iframeDoc.open();
-          iframeDoc.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; overflow: hidden; }
-              </style>
-            </head>
-            <body>
+
+          let adBody = '';
+          if (cachedAdConfig.html) {
+            adBody = cachedAdConfig.html;
+          } else if (cachedAdConfig.banner_key) {
+            const key = cachedAdConfig.banner_key;
+            const src = cachedAdConfig.banner_src || `https://gymnasiumabc.com/${key}/invoke.js`;
+            adBody = `
               <script type="text/javascript">
                 var atOptions = {
                   'key' : '${key}',
@@ -737,12 +750,25 @@
                 };
               <\/script>
               <script type="text/javascript" src="${src}"><\/script>
+            `;
+          }
+
+          iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; overflow: hidden; }
+              </style>
+            </head>
+            <body>
+              ${adBody}
             </body>
             </html>
           `);
           iframeDoc.close();
         } catch (e) {
-          console.error("Gagal merender iklan:", e);
+          console.error("Gagal merender iframe iklan:", e);
         }
       }, 50);
     }
@@ -891,11 +917,10 @@
 
       playMainVideo(video, source, player, wrapper);
 
-      // Tampilkan modal terlebih dahulu agar elemen memiliki dimensi yang nyata
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
 
-      // Render banner iklan setelah modal tampil
+      // Render banner iklan dari spreadsheet
       renderBannerAd();
 
       pingIncrementView(video.id);
@@ -971,7 +996,7 @@
 
       const shareData = {
         title: currentVideo.Title,
-        text: `Saksikan "${currentVideo.Title}" di Fight!`,
+        text: `Saksikan "${currentVideo.Title}" di Zonewave!`,
         url: videoShareUrl
       };
 
@@ -1043,7 +1068,7 @@
       document.body.style.overflow = 'auto';
       currentVideo = null;
 
-      // Bersihkan iframe iklan saat modal ditutup
+      // Bersihkan container banner saat modal ditutup
       const bannerContainer = document.getElementById('bannerContainer');
       if (bannerContainer) bannerContainer.innerHTML = '';
 
@@ -1065,22 +1090,22 @@
       }
     });
 
-    // Inisialisasi: Panggil video dan konfigurasi banner iklan dari masing-masing spreadsheet
+    // Inisialisasi: Panggil video dan konfigurasi banner iklan dari spreadsheet
     loadBannerAdFromSpreadsheet();
     loadVideos();
   </script>
 
-<!-- Histats.com  START  (aync)-->
-<script type="text/javascript">var _Hasync= _Hasync|| [];
-_Hasync.push(['Histats.start', '1,4927758,4,0,0,0,00010000']);
-_Hasync.push(['Histats.fasi', '1']);
-_Hasync.push(['Histats.track_hits', '']);
-(function() {
-var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
-hs.src = ('//s10.histats.com/js15_as.js');
-(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
-})();</script>
-<noscript><a href="/" target="_blank"><img  src="//sstatic1.histats.com/0.gif?4927758&101" alt="hit counter script" border="0"></a></noscript>
-<!-- Histats.com  END  -->
+  <!-- Histats.com START (async) -->
+  <script type="text/javascript">var _Hasync= _Hasync|| [];
+  _Hasync.push(['Histats.start', '1,4927758,4,0,0,0,00010000']);
+  _Hasync.push(['Histats.fasi', '1']);
+  _Hasync.push(['Histats.track_hits', '']);
+  (function() {
+  var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+  hs.src = ('//s10.histats.com/js15_as.js');
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+  })();</script>
+  <noscript><a href="/" target="_blank"><img src="//sstatic1.histats.com/0.gif?4927758&101" alt="hit counter script" border="0"></a></noscript>
+  <!-- Histats.com END -->
 </body>
 </html>
