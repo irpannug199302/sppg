@@ -324,6 +324,31 @@
       opacity: 0.8;
     }
 
+    /* Banner Ad Container Tepat di Bawah Video */
+    .banner-ad-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      background: #141414;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+      min-height: 50px;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .banner-ad-container:empty {
+      display: none;
+    }
+
+    .banner-ad-container iframe {
+      max-width: 100%;
+      border: none;
+      display: block;
+      margin: 0 auto;
+    }
+
     .modal-details {
       padding: 20px;
       overflow-y: auto;
@@ -423,26 +448,6 @@
       white-space: pre-line;
       max-height: 140px;
       overflow-y: auto;
-      margin-bottom: 16px;
-    }
-
-    /* Banner Ad Container Styles */
-    .banner-ad-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      margin-top: 16px;
-      min-height: 50px;
-      overflow-x: auto;
-      text-align: center;
-    }
-
-    .banner-ad-container iframe {
-      max-width: 100%;
-      border: none;
-      display: block;
-      margin: 0 auto;
     }
 
     /* Toast Notification */
@@ -548,6 +553,7 @@
     <div class="modal-content">
       <button class="close-btn" onclick="closeModal()" title="Tutup"><i class="fa-solid fa-xmark"></i></button>
       
+      <!-- 1. Player Video -->
       <div class="player-wrapper" id="playerWrapper">
         <video id="mainPlayer" controls poster="">
           <source id="videoSource" src="" type="video/mp4">
@@ -561,6 +567,10 @@
         </div>
       </div>
 
+      <!-- 2. Banner Iklan (TEPAT DI BAWAH VIDEO) -->
+      <div class="banner-ad-container" id="bannerContainer"></div>
+
+      <!-- 3. Rincian Video (Judul, Tombol Like, Deskripsi) -->
       <div class="modal-details">
         <h1 class="modal-title" id="modalTitle">Judul Video</h1>
         
@@ -585,9 +595,6 @@
         <div class="modal-description" id="modalDesc">
           Deskripsi video akan muncul di sini.
         </div>
-
-        <!-- Banner Ad Container (Hanya diisi otomatis dari Spreadsheet) -->
-        <div class="banner-ad-container" id="bannerContainer"></div>
       </div>
     </div>
   </div>
@@ -698,7 +705,7 @@
         });
       }
 
-      // Simpan konfigurasi
+      // Simpan konfigurasi iklan
       cachedAdConfig = {
         banner_key: String(config.banner_key || config.key || config.ad_key || '').trim(),
         width: parseInt(config.width || 320, 10),
@@ -715,7 +722,7 @@
       }
     };
 
-    // Fungsi render banner iklan ke dalam modal secara aman & lancar
+    // Fungsi render banner iklan tepat di bawah video
     function renderBannerAd() {
       const container = document.getElementById('bannerContainer');
       if (!container) return;
@@ -772,7 +779,7 @@
         </html>
       `;
 
-      // Gunakan iframe dengan srcdoc agar script document.write bawaan Adsterra/iklan tidak terblokir
+      // Buat iframe baru menggunakan srcdoc agar script iklan document.write berjalan mulus
       const iframe = document.createElement('iframe');
       iframe.width = width;
       iframe.height = height;
@@ -932,7 +939,7 @@
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
 
-      // Render banner iklan dari spreadsheet
+      // Render banner iklan tepat di bawah player
       renderBannerAd();
 
       pingIncrementView(video.id);
