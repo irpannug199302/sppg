@@ -608,15 +608,144 @@
   </footer>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbya8miU2RQxomRMAr-3S5r7d6sHw-7kNlgJup0n5l_KUQWc_XYVfLzYbKRDEO9av5jnDQ/exec";
-    const VAST_AD_URL = "https://s.magsrv.com/v1/vast.php?idz=6037948";
+    // =========================================================================
+    // 2 URL SPREADSHEET BERBEDA (VIDEO & IKLAN)
+    // =========================================================================
+    
+    const VIDEO_API_URL = "https://script.google.com/macros/s/AKfycbya8miU2RQxomRMAr-3S5r7d6sHw-7kNlgJup0n5l_KUQWc_XYVfLzYbKRDEO9av5jnDQ/exec";
+    const ADS_API_URL = "https://script.google.com/macros/s/AKfycbzzi3oM2bHpoCFrosdqyAW8-UDCcmn9c_Eanm2YpjKG92L00xNvaDyuTsAvIm1P7fud/exec";
+
     const DEFAULT_SITE_TITLE = "Zonewave - Platform Video Modern";
     
     let allVideosData = [];
     let currentVideo = null;
     let toastTimeout = null;
-    let isPlayingAd = false;
-    let adTimer = null;
+    let cachedAdConfig = null; // Menyimpan data konfigurasi iklan
+
+    // --- FUNGSI MENGAMBIL IKLAN BANNER DARI SPREADSHEET ---
+    function loadBannerAdFromSpreadsheet() {
+      if (!ADS_API_URL || ADS_API_URL.includes("https://script.google.com/macros/s/AKfycbzzi3oM2bHpoCFrosdqyAW8-UDCcmn9c_Eanm2YpjKG92L00xNvaDyuTsAvIm1P7fud/execL")) {
+        console.warn("ADS_API_URL belum diisi dengan URL deployment iklan.");
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = ADS_API_URL + "?action=getBanner&callback=handleBannerAd&t=" + new Date().getTime();
+      script.onerror = function() {
+        console.warn("Gagal memuat konfigurasi iklan dari spreadsheet.");
+      };
+      document.body.appendChild(script);
+    }
+
+    // Callback saat data iklan diterima dari Spreadsheet
+    function handleBannerAd(adData) {
+      if (!adData) return;
+
+      let config = {};
+
+      if (Array.isArray(adData)) {
+        // Kasus 1: Format baris objek [{Key: 'banner_key', Value: '...'}, ...]
+        if (adData[0] && (adData[0].Key !== undefined || adData[0].key !== undefined)) {
+          adData.forEach(row => {
+            const k = (row.Key || row.key || '').trim();
+            const v = (row.Value !== undefined ? row.Value : row.value);
+            if (k) config[k] = v;
+          });
+        }
+        // Kasus 2: Format array 2 dimensi [["banner_key", "..."], ...]
+        else if (Array.isArray(adData[0])) {
+          adData.forEach(row => {
+            const k = String(row[0] || '').trim();
+            const v = row[1];
+            if (k && k !== 'Key') config[k] = v;
+          });
+        }
+        // Kasus 3: Format array baris biasa [{banner_key: '...'}]
+        else if (adData[0] && typeof adData[0] === 'object') {
+          config = adData[0];
+        }
+      } else if (typeof adData === 'object') {
+        // Kasus 4: Langsung berbentuk objek { banner_key: '...' }
+        config = adData;
+      }
+
+      // Simpan konfigurasi
+      cachedAdConfig = {
+        banner_key: config.banner_key || config.Key || config.key,
+        width: parseInt(config.width || 320, 10),
+        height: parseInt(config.height || 50, 10),
+        banner_src: config.banner_src || config.src
+      };
+
+      console.log("Konfigurasi Iklan Berhasil Dimuat:", cachedAdConfig);
+
+      // Jika modal video sudah terlanjur terbuka saat iklan baru terambil, render segera
+      const modal = document.getElementById('videoModal');
+      if (modal && modal.style.display === 'flex') {
+        renderBannerAd();
+      }
+    }
+
+    // Fungsi khusus untuk merender iklan ke dalam modal
+    function renderBannerAd() {
+      if (!cachedAdConfig || !cachedAdConfig.banner_key) return;
+
+      const container = document.getElementById('bannerContainer');
+      if (!container) return;
+
+      const key = cachedAdConfig.banner_key;
+      const width = cachedAdConfig.width || 320;
+      const height = cachedAdConfig.height || 50;
+      const src = cachedAdConfig.banner_src || `https://gymnasiumabc.com/${key}/invoke.js`;
+
+      container.innerHTML = '';
+
+      // Buat iframe baru
+      const iframe = document.createElement('iframe');
+      iframe.width = width;
+      iframe.height = height;
+      iframe.style.border = 'none';
+      iframe.style.overflow = 'hidden';
+      iframe.scrolling = 'no';
+      iframe.frameBorder = '0';
+      iframe.setAttribute('allowtransparency', 'true');
+
+      container.appendChild(iframe);
+
+      // Gunakan iframe document.write agar kompatibel dengan referensi domain
+      setTimeout(() => {
+        try {
+          const doc = iframe.contentWindow || iframe.contentDocument;
+          const iframeDoc = doc.document || doc;
+          iframeDoc.open();
+          iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; overflow: hidden; }
+              </style>
+            </head>
+            <body>
+              <script type="text/javascript">
+                var atOptions = {
+                  'key' : '${key}',
+                  'format' : 'iframe',
+                  'height' : ${height},
+                  'width' : ${width},
+                  'params' : {}
+                };
+              <\/script>
+              <script type="text/javascript" src="${src}"><\/script>
+            </body>
+            </html>
+          `);
+          iframeDoc.close();
+        } catch (e) {
+          console.error("Gagal merender iklan:", e);
+        }
+      }, 50);
+    }
 
     function formatViews(views) {
       const num = parseInt(views, 10) || 0;
@@ -638,9 +767,10 @@
       return `${baseUrl}?v=${encodeURIComponent(videoId)}`;
     }
 
+    // --- FUNGSI MENGAMBIL VIDEO DARI SPREADSHEET ---
     function loadVideos() {
       const script = document.createElement('script');
-      script.src = API_URL + "?callback=handleData&t=" + new Date().getTime();
+      script.src = VIDEO_API_URL + "?callback=handleData&t=" + new Date().getTime();
       
       script.onerror = function() {
         document.getElementById('videoGrid').innerHTML = '<div class="loading-state">Gagal memuat data dari Spreadsheet.</div>';
@@ -660,14 +790,13 @@
           Category: video.Category || 'Umum',
           Description: video.Description || 'Tidak ada deskripsi tersedia.',
           CDN_URL: video.CDN_URL || video.Video_URL || '',
-          Thumbnail_URL: video.Thumbnail_URL || 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=Zonewave',
+          Thumbnail_URL: video.Thumbnail_URL || 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=Fight',
           Views: parseInt(rawViews, 10) || 0,
           Likes: parseInt(rawLikes, 10) || 0,
           isLiked: false
         };
       });
 
-      // Mengurutkan video berdasarkan yang paling populer (Views terbanyak) ke paling atas
       allVideosData.sort((a, b) => b.Views - a.Views);
 
       renderVideoList(allVideosData);
@@ -706,7 +835,7 @@
         card.id = `card-${video.id}`;
         card.innerHTML = `
           <div class="thumbnail-box">
-            <img src="${video.Thumbnail_URL}" alt="${video.Title}" onerror="this.src='https://via.placeholder.com/320x180/1f1f1f/aaaaaa?text=Zonewave'">
+            <img src="${video.Thumbnail_URL}" alt="${video.Title}" onerror="this.src='https://via.placeholder.com/320x180/1f1f1f/aaaaaa?text=Fight'">
           </div>
           <div class="card-details">
             <div class="card-title">${video.Title}</div>
@@ -760,95 +889,19 @@
       const source = document.getElementById('videoSource');
       const wrapper = document.getElementById('playerWrapper');
 
-      // Reset event handler lama
-      player.onended = null;
-      if (adTimer) clearInterval(adTimer);
+      playMainVideo(video, source, player, wrapper);
 
-      // Coba muat iklan VAST sebelum memutar video utama
-      fetch(VAST_AD_URL)
-        .then(response => response.text())
-        .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
-        .then(data => {
-          const mediaFile = data.querySelector("MediaFile");
-          if (mediaFile) {
-            const adVideoUrl = mediaFile.textContent.trim();
-            isPlayingAd = true;
-            source.src = adVideoUrl;
-            player.load();
-            
-            setupSkipAdCountdown();
-
-            // Ketika iklan selesai diputar secara utuh
-            player.onended = function() {
-              if (isPlayingAd) {
-                hideSkipAd();
-                playMainVideo(video, source, player, wrapper);
-              }
-            };
-
-            player.play().catch(() => {
-              hideSkipAd();
-              playMainVideo(video, source, player, wrapper);
-            });
-          } else {
-            playMainVideo(video, source, player, wrapper);
-          }
-        })
-        .catch(() => {
-          // Jika gagal fetch VAST (misal diblokir CORS/jaringan), langsung putar video utama
-          playMainVideo(video, source, player, wrapper);
-        });
-
+      // Tampilkan modal terlebih dahulu agar elemen memiliki dimensi yang nyata
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
+
+      // Render banner iklan setelah modal tampil
+      renderBannerAd();
 
       pingIncrementView(video.id);
     }
 
-    function setupSkipAdCountdown() {
-      const container = document.getElementById('adOverlayContainer');
-      const btn = document.getElementById('skipAdBtn');
-      const textSpan = document.getElementById('skipAdText');
-
-      container.style.display = 'block';
-      btn.disabled = true;
-      let timeLeft = 5;
-      textSpan.innerText = `Lewati Iklan dalam ${timeLeft}s`;
-
-      if (adTimer) clearInterval(adTimer);
-      adTimer = setInterval(() => {
-        timeLeft--;
-        if (timeLeft > 0) {
-          textSpan.innerText = `Lewati Iklan dalam ${timeLeft}s`;
-        } else {
-          clearInterval(adTimer);
-          btn.disabled = false;
-          textSpan.innerHTML = `Lewati Iklan <i class="fa-solid fa-forward"></i>`;
-        }
-      }, 1000);
-    }
-
-    function skipAd() {
-      if (!isPlayingAd) return;
-      hideSkipAd();
-      if (currentVideo) {
-        const player = document.getElementById('mainPlayer');
-        const source = document.getElementById('videoSource');
-        const wrapper = document.getElementById('playerWrapper');
-        playMainVideo(currentVideo, source, player, wrapper);
-      }
-    }
-
-    function hideSkipAd() {
-      isPlayingAd = false;
-      if (adTimer) clearInterval(adTimer);
-      document.getElementById('adOverlayContainer').style.display = 'none';
-      const player = document.getElementById('mainPlayer');
-      player.onended = null;
-    }
-
     function playMainVideo(video, source, player, wrapper) {
-      hideSkipAd();
       source.src = video.CDN_URL;
       player.load();
 
@@ -884,7 +937,7 @@
 
       try {
         const pingImg = new Image();
-        pingImg.src = `${API_URL}?action=toggleLike&id=${encodeURIComponent(currentVideo.id)}&status=${currentVideo.isLiked}&likes=${currentVideo.Likes}&t=${Date.now()}`;
+        pingImg.src = `${VIDEO_API_URL}?action=toggleLike&id=${encodeURIComponent(currentVideo.id)}&status=${currentVideo.isLiked}&likes=${currentVideo.Likes}&t=${Date.now()}`;
       } catch (e) {
         console.warn("Status like gagal dikirim:", e);
       }
@@ -918,7 +971,7 @@
 
       const shareData = {
         title: currentVideo.Title,
-        text: `Saksikan "${currentVideo.Title}" di Zonewave!`,
+        text: `Saksikan "${currentVideo.Title}" di Fight!`,
         url: videoShareUrl
       };
 
@@ -975,7 +1028,7 @@
     function pingIncrementView(videoId) {
       try {
         const pingImg = new Image();
-        pingImg.src = `${API_URL}?action=view&id=${encodeURIComponent(videoId)}&t=${Date.now()}`;
+        pingImg.src = `${VIDEO_API_URL}?action=view&id=${encodeURIComponent(videoId)}&t=${Date.now()}`;
       } catch (e) {
         console.warn("Ping increment tayangan gagal dikirim:", e);
       }
@@ -985,11 +1038,14 @@
       const modal = document.getElementById('videoModal');
       const player = document.getElementById('mainPlayer');
 
-      hideSkipAd();
       player.pause();
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
       currentVideo = null;
+
+      // Bersihkan iframe iklan saat modal ditutup
+      const bannerContainer = document.getElementById('bannerContainer');
+      if (bannerContainer) bannerContainer.innerHTML = '';
 
       document.title = DEFAULT_SITE_TITLE;
 
@@ -1009,8 +1065,11 @@
       }
     });
 
+    // Inisialisasi: Panggil video dan konfigurasi banner iklan dari masing-masing spreadsheet
+    loadBannerAdFromSpreadsheet();
     loadVideos();
   </script>
+
 <!-- Histats.com  START  (aync)-->
 <script type="text/javascript">var _Hasync= _Hasync|| [];
 _Hasync.push(['Histats.start', '1,4927758,4,0,0,0,00010000']);
